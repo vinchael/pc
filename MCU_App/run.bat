@@ -1,0 +1,1 @@
+MCUAppAuto.bat > log.txt
