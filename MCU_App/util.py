@@ -2,6 +2,7 @@ import argparse
 import os
 import pandas as pd
 from pandas import ExcelWriter
+from xlrd import open_workbook
 
 def createExcelFile(df, filename):
     writer = ExcelWriter(filename)
@@ -15,7 +16,6 @@ def readExcelFile(filename, inputData):
                        sheet_name=inputData[0],
                        usecols=inputData[1],
                        skiprows=inputData[2])
-    
     return(df)
 
 def readArgParse():

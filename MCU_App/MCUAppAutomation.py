@@ -5,14 +5,13 @@ import numpy as np
 
 #             Sheet name , Use cols , Skip rows
 #             [0]        , [1]      , [2]
-inputData = ['Interface', 'A, E, I, J', 12]
-inputData2 =['Sheet1', 'A:B', 0]
+inputData = ['Interface', 'A, I, J, K', 12]
 
 def  createData(df):
-
     # ------------------------------
     # Change column name for SigName(CAN/LIN/MDL)
-    CAN_df = df.rename(columns={'SigName(CAN/LIN/MDL)': 'CAN_SigName'})
+    df = df.drop(df[(df['Status'] == "Not Valid")].index)
+    #CAN_df = df.rename(columns={'SigName(CAN/LIN/MDL)': 'CAN_SigName'})
 
     # ------------------------------
     # Create column data type from SigName(MDL)
@@ -62,8 +61,8 @@ def  createData(df):
     MDL_Res_df = MDL_df.drop_duplicates(subset=['MDL_Combine'], keep='last')
     MDL_Res_df = MDL_Res_df[["対象モデル", "MDL_Merge"]]
     MDL_Res_df = MDL_Res_df.rename(columns={'MDL_Merge': 'DataType',
-                                    '対象モデル': 'Model'})
-
+                                            '対象モデル': 'Model'})
+    '''
     # ------------------------------
     # CAN SIGNAME
     # ------------------------------
@@ -77,7 +76,7 @@ def  createData(df):
         CAN_df['CAN_DataType'] == "-") | (CAN_df['CAN_DataType'] == "")].index)
     CAN_df['CAN_DataType'] = CAN_df['CAN_DataType'].replace(
         ['single', 'Single'], 'float32')
-        
+
     # ------------------------------
     # Create column variable names from CAN_SigName
     # Remove unwanted strings, arrays and values
@@ -96,7 +95,7 @@ def  createData(df):
         r'^\w*\d{0,2}[^\[]|(\[\D+\]|\[\D+\]\[\D+\])', '', regex=True)
     CAN_df['CAN_Array2D'] = CAN_df['CAN_Array2D1D'].astype(str).str.replace(
         r'^\[\d*\]$', '', regex=True)
-    
+
     # ------------------------------
     # Combine, count and drop duplicate data from Signame(CAN)
     CAN_df['CAN_Combine'] = CAN_df['CAN_DataType'] + ' ' + CAN_df['対象モデル'] + \
@@ -123,16 +122,17 @@ def  createData(df):
     CAN_Res_df = CAN_Res_df[["対象モデル", "CAN_Merge"]]
     CAN_Res_df = CAN_Res_df.rename(columns={'CAN_Merge': 'DataType',
                                             '対象モデル': 'Model'})
-    
+
     # ------------------------------
     # Combine two data frame
     df = [MDL_Res_df, CAN_Res_df]
     df = pd.concat(df, sort=False, ignore_index=True)
-    df = df.drop_duplicates(subset=['Model','DataType'])
+    df = df.drop_duplicates(subset=['Model', 'DataType'])
     #print(df)
-
+    '''
     print("Finish creating dataframe")
-    createExcelFile(df, 'DataExtracted.xlsx')
+    createExcelFile(MDL_Res_df, 'DataExtracted.xlsx')
+
 
 def main(argv):
     filename = readArgParse()
@@ -145,8 +145,5 @@ def main(argv):
 if __name__ == "__main__":
     #print(__name__)
     main(sys.argv[1:])
-
-
-
 
 

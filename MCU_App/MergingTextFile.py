@@ -52,7 +52,7 @@ def filterData(args):
     #print(newDf)
 
     if len(newDf.head(1)) == 0:
-        print("No Object Model for: ", args.variant[:-2])
+        print("No Object Model for ", args.variant)
     else:
         #print("Creating " + args.variant + " global variable")
         setDataVariable(args, newDf)
