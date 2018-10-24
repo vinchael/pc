@@ -11,7 +11,7 @@ def createExcelFile(df, filename):
     writer.close()
 
 def readExcelFile(filename, inputData):
-    print("creating dataframe")
+    #print("Creating dataframe")
     df = pd.read_excel(filename,
                        sheet_name=inputData[0],
                        usecols=inputData[1],
@@ -21,12 +21,12 @@ def readExcelFile(filename, inputData):
 def readArgParse():
     # Accepting input
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', dest = 'excelFile', help = 'Variant: -v [filename].xslx')
+    parser.add_argument('-v', dest = 'dest', help = 'Variant: -v [filename')
     args = parser.parse_args()
 
-    if args.excelFile:
-        print("argument accepted")
-        return args.excelFile
+    if args.dest:
+        print("Argument accepted")
+        return args.dest
     else:
         return 0
 
