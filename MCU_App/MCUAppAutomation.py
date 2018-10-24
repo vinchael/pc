@@ -1,4 +1,5 @@
 from util import *
+from StringUtils import *
 import sys
 import numpy as np
 
@@ -6,69 +7,71 @@ import numpy as np
 #             [0]        , [1]      , [2]
 inputData = ['Interface', 'A,B,D,E,I,J,K', 12]
 
+unwantedString = {'nan', '-', ''}
+replaceString = {'single', 'Single'}
+
 def  createData(df):
     # ------------------------------
     # Change column name for SigName(CAN/LIN/MDL)
-    MDL_df = df.drop(df[(df['Status'] == "Not Valid")].index)
-    
+    df = drop(df, 'Status', "Not Valid")
+
     # ------------------------------
     # Create column data type from SigName(MDL)
     # Remove unwanted strings, arrays and values
-    MDL_df['MDL_DataType'] = MDL_df['型[配列サイズ]'].astype(str).str.replace(
-        r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '', regex=True)
-    MDL_df = MDL_df.drop(MDL_df[(MDL_df['MDL_DataType'] == "nan") | (
-        MDL_df['MDL_DataType'] == "-") | (MDL_df['MDL_DataType'] == "")].index)
-    MDL_df['MDL_DataType'] = MDL_df['MDL_DataType'].replace(
-        ['single', 'Single'], 'float32')
+    df['MDL_DataType'] = reg_replace(
+        df, '型[配列サイズ]', r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '')
+
+    for i in unwantedString:
+        df = drop(df, 'MDL_DataType', i)
+    for i in replaceString:
+        df['MDL_DataType'] = replace(df, 'MDL_DataType', i, 'float32')
 
     # ------------------------------
     # Create column variable names from SigName(MDL)
-    MDL_df['MDL_Variable'] = MDL_df['SigName(MDL)'].astype(str).str.replace(
-        r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '', regex=True)
+    df['MDL_Variable'] = reg_replace(
+        df, 'SigName(MDL)', r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '')
 
     # ------------------------------
-    # Create 2d array and 1d array from Signame(MDL)
-    MDL_df['MDL_Array2D1D'] = MDL_df['型[配列サイズ]'].astype(str).str.replace(
-        r'^\w*\d{0,2}[^\[]|(\[\D+\]|\[\D+\]\[\D+\])', '', regex=True)
-    MDL_df['MDL_Array2D'] = MDL_df['MDL_Array2D1D'].astype(str).str.replace(
-        r'^\[\d*\]$', '', regex=True)
+    # Create 2d array from Signame(MDL)
+    df['MDL_Array2D1D'] = reg_replace(
+        df, '型[配列サイズ]', r'^\w*\d{0,2}[^\[]|(\[\D+\]|\[\D+\]\[\D+\])', '')
 
-    MDL_df['MDL_ModVar'] = MDL_df['対象モデル'] + '_' + MDL_df['MDL_Variable']
+    # ------------------------------
+    # Create 1d array from Signame(MDL)
+    df['MDL_Array2D'] = reg_replace(df, 'MDL_Array2D1D', r'^\[\d*\]$', '')
 
-    createExcelFile(MDL_df, 'ForFunctionVariable.xlsx')
+    # ------------------------------
+    # For FunctionVariable.xlsx input file
+    df['MDL_ModVar'] = df['対象モデル'] + '_' + df['MDL_Variable']
+    createExcelFile(df, 'ForFunctionVariable.xlsx')
+
     # ------------------------------
     # Combine, count and drop duplicate data from Signame(MDL)
-    MDL_df['MDL_Combine'] = MDL_df['MDL_DataType'] + ' ' + MDL_df['対象モデル'] + \
-        ' ' + MDL_df['MDL_Variable']  
-    MDL_df['MDL_Count'] = MDL_df.MDL_Combine.map(
-        MDL_df.MDL_Combine.value_counts())
-    MDL_df['MDL_Count'] = ('[' + MDL_df['MDL_Count'].astype(str) + ']')
-    MDL_df['MDL_Count'] = MDL_df['MDL_Count'].replace('[1]', '')
-    countCond = MDL_df.MDL_Count == ''
-    MDL_df.MDL_Count[countCond] = MDL_df.MDL_Array2D[MDL_df.MDL_Array2D != '']
-    MDL_df.MDL_Count[countCond] = MDL_df.MDL_Array2D1D[MDL_df.MDL_Array2D1D != '']
+    df['MDL_Combine'] = df['MDL_DataType'] + ' ' + df['対象モデル'] + \
+        ' ' + df['MDL_Variable']
+    df['MDL_Count'] = df.MDL_Combine.map(df.MDL_Combine.value_counts())
+    df['MDL_Count'] = ('[' + df['MDL_Count'].astype(str) + ']')
+    df['MDL_Count'] = df['MDL_Count'].replace('[1]', '')
+    countCond = df.MDL_Count == ''
+    df.MDL_Count[countCond] = df.MDL_Array2D[df.MDL_Array2D != '']
+    df.MDL_Count[countCond] = df.MDL_Array2D1D[df.MDL_Array2D1D != '']
 
-    
     # ------------------------------
     # Create MDL_SigName to merge
-    MDL_df['MDL_Count'] = MDL_df['MDL_Count'].replace([
-        np.nan], '')
-    MDL_df['MDL_Merge'] = MDL_df['MDL_DataType']+' ' + \
-        MDL_df['対象モデル'] + '_'+ MDL_df['MDL_Variable'] + \
-        MDL_df['MDL_Count'].astype(str) + ';'
-    
+    df['MDL_Count'] = replace( df, 'MDL_Count', np.nan, '' )
+    df['MDL_Merge'] = df['MDL_DataType']+' ' + \
+    df['対象モデル'] + '_' + df['MDL_Variable'] + \
+    df['MDL_Count'].astype(str) + ';'
+
     # ------------------------------
     # drop duplicate column in MDL_Combine
     # Create final df for MDL
-    MDL_Res_df = MDL_df.drop_duplicates(subset=['MDL_Combine'], keep='last')
-    MDL_Res_df = MDL_Res_df[["対象モデル", "MDL_Merge",
-                             "Unnamed: 1", "入力元", "SigName(CAN/LIN/MDL)",
-                             "MDL_ModVar"]]
-    MDL_Res_df = MDL_Res_df.rename(columns={'MDL_Merge': 'DataType',
-                                            '対象モデル': 'Model'})
-    
+    df = df.drop_duplicates(subset=['MDL_Combine'], keep='last')
+    df = df[["対象モデル", "MDL_Merge"]]
+    df = df.rename(columns={'MDL_Merge': 'DataType', '対象モデル': 'Model'})
+
     #print("Finish creating dataframe")
-    createExcelFile(MDL_Res_df, 'ForMergingTextFile.xlsx')
+    createExcelFile(df, 'ForMergingTextFile.xlsx')
 
 
 def main(argv):

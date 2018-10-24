@@ -11,7 +11,6 @@ def createExcelFile(df, filename):
     writer.close()
 
 def readExcelFile(filename, inputData):
-    #print("Creating dataframe")
     df = pd.read_excel(filename,
                        sheet_name=inputData[0],
                        usecols=inputData[1],
@@ -29,7 +28,6 @@ def readArgParse():
         return args.dest
     else:
         return 0
-
 
 def getCurrentDirectory(filename):
     base_path = os.path.dirname(os.path.realpath(__file__))

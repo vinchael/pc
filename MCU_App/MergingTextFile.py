@@ -6,73 +6,51 @@ import argparse
 import numpy as np
 import linecache
 from util import *
+from StringUtils import *
 
 #             Sheet name , Use cols
 #             [0]        , [1]
-input_data = ['Sheet1', 'A:F']
-
-def findLine(filename, str):
-    lineNumber = 0
-    with open(filename, 'r') as f:
-            for line in f.readlines():
-                nLine = line.strip()
-                if bool(re.match(str, nLine)):
-                    break
-                else:
-                    lineNumber = lineNumber + 1
-    f.close()
-    return lineNumber + 1
-
-
-def concatLine(filename, lineNumber):
-    line = linecache.getline(filename, lineNumber)
-    return line
-
-def setDataVariable(args, newDf):
-    str = r'(.*)DO NOT CHANGE THIS COMMENT!           << Start of include(.*)'
-    lineNumber = findLine(args.variant, str)
-    lineNumber = lineNumber + 2
-    #get datatype column only
-    dataTypedf = newDf["DataType"]
-    
-    #if lineNumber has value
-    if lineNumber:
-        for datas in range(dataTypedf.shape[0]):
-            replaceLine(args.variant, lineNumber, dataTypedf.iat[datas])
-            lineNumber = lineNumber + 1
-            #print(dataTypedf.iat[datas])
-
-    print("Finish creating global variable for " + args.variant)
-
-def replaceLine(filename, line_num, text):
-    INLines = open(filename, 'r').readlines()
-    INLines[line_num] = text + '\n\n'
-    out = open(filename, 'w')
-    out.writelines(INLines)
-    out.close()
+inputData0 = ['Sheet1', 'A:F', 0]
+inputData1 = ['Sheet1', 'A:B', 0]
 
 def filterData(args):
-    df = pd.read_excel(args.data,
-                            sheet_name=input_data[0],
-                            usecols=input_data[1])
-
-    #Filter Data from ExtractedData
-    df['Model'] = df.Model.astype(str).str.lower()
     charMe = args.variant[:-2].lower()
-    newDf = df[df['Model'].str.contains(charMe)]
+    if args.count == "0":
+        df = readExcelFile(args.data, inputData0)
+        df['Model'] = df.Model.astype(str).str.lower()
+        newDf = df[df['Model'].str.contains(charMe)]
+    else:
+        df = readExcelFile(args.data, inputData1)
+        df['Module'] = df.Module.astype(str).str.lower()
+        newDf = df[df['Module'].str.contains(charMe)]
     
-    #print(newDf)
 
     if len(newDf.head(1)) == 0:
         print("No Object Module for ", args.variant)
     else:
-        setDataVariable(args, newDf)
+        if args.count == "0":
+            string = r'(.*)DO NOT CHANGE THIS COMMENT!           << Start of include(.*)'
+            column_name = 'DataType'
+            skip_count = 2
+            spaces = ''
+            setDataVariable(args.variant, newDf, string,
+                            column_name, skip_count, spaces)
+            print("Finish creating global variable for " + args.variant)
+        else:
+            string = r'(.*)DO NOT CHANGE THIS COMMENT!           << Start of runnable implementation >>(.*)'
+            column_name = 'Function_Name'
+            skip_count = 3
+            spaces = '  '
+            setDataVariable(args.variant, newDf, string,
+                            column_name, skip_count, spaces)
+            print("Finish creating function for " + args.variant)
 
 def main(argv):
     # Read arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', dest="variant", help='[filename].c')
     parser.add_argument('-d', dest="data", help='[Filename].xlsx')
+    parser.add_argument('-c', dest="count", help='[count]')
     args = parser.parse_args()
     
     filterData(args)

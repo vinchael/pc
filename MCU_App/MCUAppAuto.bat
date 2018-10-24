@@ -13,13 +13,13 @@ if exist "%input%" (
 
 for /R %directory% %%f in (*.c) do (
 >con echo Creating global variable for %%~nf.c
-	python %directory%MergingTextFile.py -v %%~nf.c -d %directory%ForMergingTextFile.xlsx
+	python %directory%MergingTextFile.py -v %%~nf.c -d %directory%ForMergingTextFile.xlsx -c 0
 )
 
 for /R %directory% %%f in (*.c) do (
 >con echo Creating function call for %%~nf.c
 	python %directory%FunctionVariable.py -v %%~nf.c -d %directory%ForFunctionVariable.xlsx
-	python %directory%MCUAppMethod.py -v %%~nf.c -d %directory%ForMCUAppMethod.xlsx
+	python %directory%MergingTextFile.py -v %%~nf.c -d %directory%ForMCUAppMethod.xlsx -c 1
 )
 exit /b
 pause

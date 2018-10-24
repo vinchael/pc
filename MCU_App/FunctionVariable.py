@@ -1,4 +1,5 @@
 from util import *
+from StringUtils import *
 import sys
 import pandas as pd
 import numpy as np
@@ -14,6 +15,8 @@ CTL = {'EGI','TCU_CVT','TCU_Shift','VDC'}
 
 INDefault = "Rte_Read_RP_"
 OUTDefault = "Rte_Write_PP_"
+
+unwantedString = {'nan', '-', ''}
 
 def getModPosKey(df, row, col):
     index = df.iat[row, col]
@@ -133,22 +136,22 @@ def filterData(args):
     
         #Filter Data from ExtractedData
         df = df.rename(columns={'SigName(CAN/LIN/MDL)': 'CAN_SigName'})
-        df['入力元'] = df['入力元'].replace(['-', 'nan'], '')
 
-        df['Array2D1D'] = df['CAN_SigName'].astype(str).str.replace(
-            r'.*[^(\d{2})]', '', regex=True)
+        for i in unwantedString:
+            df['入力元'] = replace(df, '入力元', i, '')
 
-        df['MDL_Array2D1D'] = df['MDL_Array2D1D'].astype(str).str.replace(
-            r'[\[\]]', '', regex=True)
-        df['MDL_Array2D1D'] = df['MDL_Array2D1D'].astype(
-            str).str.replace('nan', '')
+        df['Array2D1D'] = reg_replace(df, 'CAN_SigName', r'.*[^(\d{2})]', '')
+        df['MDL_Array2D1D'] = reg_replace(df, 'MDL_Array2D1D', r'[\[\]]', '')
+        df['MDL_Array2D1D'] = replace(df, 'MDL_Array2D1D', 'nan', '')
 
         df['Index'] = df.apply(lambda x: x['MDL_Array2D1D']
                             == x['Array2D1D'], axis=1)
 
-        df['CAN_Variable'] = df['CAN_SigName'].astype(str).str.replace(
-            r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '', regex=True)
-        df['CAN_Variable'] = df['CAN_Variable'].replace(['-', 'nan'], '')
+        df['CAN_Variable'] = reg_replace(
+            df, 'CAN_SigName', r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '')
+
+        for i in unwantedString:
+            df['CAN_Variable'] = replace(df, 'CAN_Variable', i, '')
 
         df['CAN_ModVar'] = df['入力元'] + '_' + df['CAN_Variable']
         createData(args, df)
