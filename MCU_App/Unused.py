@@ -199,3 +199,6 @@ if len(sys.argv) > 2:
 else:
     print(
         "Please input arguments: python MergingTextFile.py -v [filename].c -d [filename].xlsx")
+
+
+newDf = df[df['Model'].str.contains(charMe)]

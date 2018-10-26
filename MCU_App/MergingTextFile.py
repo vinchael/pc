@@ -1,3 +1,5 @@
+from util import *
+from StringUtils import *
 import pandas as pd
 import os
 import re
@@ -5,26 +7,25 @@ import sys
 import argparse
 import numpy as np
 import linecache
-from util import *
-from StringUtils import *
+
 
 #             Sheet name , Use cols
 #             [0]        , [1]
-inputData0 = ['Sheet1', 'A:F', 0]
-inputData1 = ['Sheet1', 'A:B', 0]
+inputData0 = ['Sheet1', 'A:F', OFF]
+inputData1 = ['Sheet1', 'A:B', OFF]
+
+dataHandler = {"0": [inputData0],
+               "1": [inputData1]}
 
 def filterData(args):
+    df = readExcelFile(args.data, dataHandler[args.count][0])
     charMe = args.variant[:-2].lower()
     if args.count == "0":
-        df = readExcelFile(args.data, inputData0)
         df['Model'] = df.Model.astype(str).str.lower()
-        newDf = df[df['Model'].str.contains(charMe)]
+        newDf = df[df['Model'] == charMe]
     else:
-        df = readExcelFile(args.data, inputData1)
         df['Module'] = df.Module.astype(str).str.lower()
-        newDf = df[df['Module'].str.contains(charMe)]
-    
-
+        newDf = df[df['Module'] == charMe]
     if len(newDf.head(1)) == 0:
         print("No Object Module for ", args.variant)
     else:

@@ -4,6 +4,9 @@ import pandas as pd
 from pandas import ExcelWriter
 from xlrd import open_workbook
 
+OFF = 0
+ON = 1
+
 def createExcelFile(df, filename):
     writer = ExcelWriter(filename)
     df.to_excel(writer, 'Sheet1', index=False)
