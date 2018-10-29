@@ -10,7 +10,13 @@ inputData = ['Interface', 'A,B,D,E,I,J,K', 12]
 unwantedString = {'nan', '-', ''}
 replaceString = {'single', 'Single'}
 
-def  createData(df):
+# Column header
+Module_col_index = 0
+MDL_DataType_col_index = 7
+MDL_Variable_col_index = 8
+MDL_Count_col_index = 13
+
+def createData(df):
     # ------------------------------
     # Change column name for SigName(CAN/LIN/MDL)
     df = drop(df, 'Status', "Not Valid")
@@ -26,8 +32,6 @@ def  createData(df):
     for i in replaceString:
         df['MDL_DataType'] = replace(df, 'MDL_DataType', i, 'float32')
 
-    createExcelFile(df, 'Sample.xlsx')
-    
     # ------------------------------
     # Create column variable names from SigName(MDL)
     df['MDL_Variable'] = reg_replace(
@@ -37,44 +41,61 @@ def  createData(df):
     # Create 2d array from Signame(MDL)
     df['MDL_Array2D1D'] = reg_replace(
         df, '型[配列サイズ]', r'^\w*\d{0,2}[^\[]|(\[\D+\]|\[\D+\]\[\D+\])', '')
-
-    # ------------------------------
-    # Create 1d array from Signame(MDL)
-    df['MDL_Array2D'] = reg_replace(df, 'MDL_Array2D1D', r'^\[\d*\]$', '')
-
+        
     # ------------------------------
     # For FunctionVariable.xlsx input file
     df['MDL_ModVar'] = df['対象モデル'] + '_' + df['MDL_Variable']
-    #createExcelFile(df, 'ForFunctionVariable.xlsx')
+    createExcelFile(df, 'ForFunctionVariable.xlsx')
 
+    # ------------------------------
+    # Combine and drop duplicate variable name
+    df['Combine_VarArr'] = df['対象モデル'] + \
+        df['MDL_Variable'] + df['MDL_Array2D1D']
+    df = df.drop_duplicates(subset=['Combine_VarArr'], keep='last')
+    
     # ------------------------------
     # Combine, count and drop duplicate data from Signame(MDL)
     df['MDL_Combine'] = df['MDL_DataType'] + ' ' + df['対象モデル'] + \
         ' ' + df['MDL_Variable']
     df['MDL_Count'] = df.MDL_Combine.map(df.MDL_Combine.value_counts())
     df['MDL_Count'] = ('[' + df['MDL_Count'].astype(str) + ']')
-    df['MDL_Count'] = df['MDL_Count'].replace('[1]', '')
+    df['MDL_Count'] = replace(df, 'MDL_Count', '[1]', '')
     countCond = df.MDL_Count == ''
-    df.MDL_Count[countCond] = df.MDL_Array2D[df.MDL_Array2D != '']
     df.MDL_Count[countCond] = df.MDL_Array2D1D[df.MDL_Array2D1D != '']
-
-    # ------------------------------
-    # Create MDL_SigName to merge
-    df['MDL_Count'] = replace( df, 'MDL_Count', np.nan, '' )
-    df['MDL_Merge'] = df['MDL_DataType']+' ' + \
-    df['対象モデル'] + '_' + df['MDL_Variable'] + \
-    df['MDL_Count'].astype(str) + ';'
-
-    # ------------------------------
-    # drop duplicate column in MDL_Combine
-    # Create final df for MDL
+    df['MDL_Count'] = replace(df, 'MDL_Count', np.nan, '')
     df = df.drop_duplicates(subset=['MDL_Combine'], keep='last')
-    df = df[["対象モデル", "MDL_Merge"]]
-    df = df.rename(columns={'MDL_Merge': 'DataType', '対象モデル': 'Model'})
 
-    #print("Finish creating dataframe")
-    #createExcelFile(df, 'ForMergingTextFile.xlsx')
+    #createExcelFile(df, 'Sample.xlsx')
+    string = []
+    moduleName = []
+    for row in range(df.shape[0]):
+        Module = df.iat[row, Module_col_index]
+        MDL_DataType = df.iat[row, MDL_DataType_col_index]
+        MDL_Variable = df.iat[row, MDL_Variable_col_index]
+        MDL_Count = df.iat[row, MDL_Count_col_index]
+        if MDL_Count == '':
+            string.append(createVarName(
+                Module, MDL_DataType, MDL_Variable, '', False))
+            moduleName.append(Module)
+        else:
+            string.append(createVarName(Module, MDL_DataType,
+                                        MDL_Variable, MDL_Count, True))
+            moduleName.append(Module)
+            pass            
 
+    df = pd.DataFrame({'Module': moduleName, 'DataType': string})
+    createExcelFile(df, 'ForMergingTextFile.xlsx')
+
+
+def createVarName( module, datatype, varName, index, boolean ):
+
+    # datatype +  module + varName               +   index  ;
+    # float32  +  CUS_   + varCurveDecInfoRadius + [ index ];
+    string = datatype + ' ' + module + '_' + varName
+    if boolean:
+        return string + index + ';'
+    else:
+        return string + ';'
 
 def main(argv):
     filename = readArgParse()
@@ -84,8 +105,7 @@ def main(argv):
     else:
         print('Please input: python ' + sys.argv[0] + ' -h')
 
+
 if __name__ == "__main__":
     #print(__name__)
     main(sys.argv[1:])
-
-

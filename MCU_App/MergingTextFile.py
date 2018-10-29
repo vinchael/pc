@@ -20,12 +20,10 @@ dataHandler = {"0": [inputData0],
 def filterData(args):
     df = readExcelFile(args.data, dataHandler[args.count][0])
     charMe = args.variant[:-2].lower()
-    if args.count == "0":
-        df['Model'] = df.Model.astype(str).str.lower()
-        newDf = df[df['Model'] == charMe]
-    else:
-        df['Module'] = df.Module.astype(str).str.lower()
-        newDf = df[df['Module'] == charMe]
+
+    df['Module'] = df.Module.astype(str).str.lower()
+    newDf = df[df['Module'] == charMe]
+        
     if len(newDf.head(1)) == 0:
         print("No Object Module for ", args.variant)
     else:

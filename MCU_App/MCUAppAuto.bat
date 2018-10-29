@@ -5,7 +5,7 @@ set directory=%~dp0
 >con set /p "input=Input file name here: "
 if exist "%input%" (
 >con echo Opening scripts...
-	python %directory%MCUAppAutomation.py -v %input%
+	python %directory%DataManipulation.py -v %input%
 ) else (
 >con echo "File not exist!"
 )

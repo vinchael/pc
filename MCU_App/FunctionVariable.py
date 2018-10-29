@@ -24,12 +24,12 @@ unwantedString = {'nan', '-', '', 'パラ', 'OFF', 'ON'}
 State_col_index = 1
 frModule_columm_index = 2
 MDL_Array2D1D_col_index = 9
-MDL_ModVar_col_index = 11
-Module_col_index = 12
-count_col_index = 14
-CAN_Variable_col_index = 15
-CAN_ModVar_col_index = 16
-index_col_index = 17
+MDL_ModVar_col_index = 10
+Module_col_index = 11
+count_col_index = 13
+CAN_Variable_col_index = 14
+CAN_ModVar_col_index = 15
+index_col_index = 16
 
 
 def getModPosKey(df, row, col):
@@ -41,7 +41,7 @@ def getModPosKey(df, row, col):
     else:
         return 'Others'
 
-def createVarName(df, row, posKey, posVal, varName, name, insideVarName ):
+def createFuncName(df, row, posKey, posVal, varName, name, insideVarName ):
     
     Arr = df.iat[row, MDL_Array2D1D_col_index]
     Array2D1D = df.iat[row, count_col_index]
@@ -103,21 +103,21 @@ def createData(args, df):
             if posKey == 'CAN_VP':
                 if MDL_ModVar != '':
                     if inputFrom == "CAN":  # CAN
-                        string.append(createVarName(
+                        string.append(createFuncName(
                             df, row, posKey, 0, MDL_ModVar, INDefault, MDL_ModVar))
                         moduleName.append(modName)
                     else:  # VP
-                        string.append(createVarName(
+                        string.append(createFuncName(
                             df, row, posKey, 1, MDL_ModVar, INDefault, MDL_ModVar))
                         moduleName.append(modName)
             elif posKey == 'CTL':
                 if CAN_Variable != '':
-                    string.append(createVarName(
+                    string.append(createFuncName(
                         df, row, posKey, 0, CAN_ModVar, INDefault, MDL_ModVar))
                     moduleName.append(modName)
             else:
                 if CAN_Variable != '':
-                    string.append(createVarName(
+                    string.append(createFuncName(
                         df, row, posKey, 0, CAN_ModVar, INDefault, MDL_ModVar))
                     moduleName.append(modName)
         else:
@@ -128,21 +128,21 @@ def createData(args, df):
             if posKey == 'CAN_VP':
                 if MDL_ModVar != '':
                     if inputFrom == "CAN":  # CAN
-                        string.append(createVarName(
+                        string.append(createFuncName(
                             df, row, posKey, 0, MDL_ModVar, OUTDefault, MDL_ModVar))
                         moduleName.append(modName)
                     else:  # VP
-                        string.append(createVarName(
+                        string.append(createFuncName(
                             df, row, posKey, 1, MDL_ModVar, OUTDefault, MDL_ModVar))
                         moduleName.append(modName)
             elif posKey == 'CTL':
                 if CAN_Variable != '':
-                    string.append(createVarName(
+                    string.append(createFuncName(
                         df, row, posKey, 0, MDL_ModVar, OUTDefault, MDL_ModVar))
                     moduleName.append(modName)
             else:
                 if MDL_ModVar != '':
-                    string.append(createVarName(
+                    string.append(createFuncName(
                         df, row, posKey, 0, MDL_ModVar, OUTDefault, MDL_ModVar))
                     moduleName.append(modName)
     

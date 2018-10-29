@@ -202,3 +202,9 @@ else:
 
 
 newDf = df[df['Model'].str.contains(charMe)]
+
+df['Array2D1D'] = reg_replace(df, 'CAN_SigName', r'.*[^(\d{2})]', '')
+df['MDL_Array2D1D'] = reg_replace(df, 'MDL_Array2D1D', r'[\[\]]', '')
+df['MDL_Array2D1D'] = replace(df, 'MDL_Array2D1D', 'nan', '')
+
+
