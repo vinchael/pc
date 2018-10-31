@@ -6,7 +6,7 @@ import numpy as np
 
 #             Sheet name , Use cols , Skip rows
 #             [0]        , [1]      , [2]
-inputData = ['Sheet1', 'A:L', OFF]
+inputData = ['Sheet1', 'A:M', OFF]
 module = {'CAN_VP': ['CANRx_', 'IPCRx_'],
           'CTL': ['Ctl_'],
           'Others': ['Feat_']}
@@ -16,21 +16,15 @@ NOT = {'RTE', 'FWBSW', 'NVMBSW', 'CONST', 'FMWF',
        'Ground', 'SWBSW', 'SSM', 'Input_Getway', 
        'RTE_Gateway', 'FMWR1'}
 
-INDefault = "Rte_Read_RP_"
-OUTDefault = "Rte_Write_PP_"
-
 unwantedString = {'nan', '-', '', 'パラ', 'OFF', 'ON'}
 
-State_col_index = 1
-frModule_columm_index = 2
-MDL_Array2D1D_col_index = 9
-MDL_ModVar_col_index = 10
-Module_col_index = 11
-count_col_index = 13
-CAN_Variable_col_index = 14
-CAN_ModVar_col_index = 15
-index_col_index = 16
-
+State_col_ind1 = 1
+frModule_columm_ind2 = 2
+MDL_ModVar_col_ind10 = 10
+MDL_Count_col_ind12 = 12
+Module_col_ind13 = 13
+CAN_Variable_col_ind14 = 14
+CAN_ModVar_col_ind15 = 15
 
 def getModPosKey(df, row, col):
     index = df.iat[row, col]
@@ -43,53 +37,43 @@ def getModPosKey(df, row, col):
 
 def createFuncName(df, row, posKey, posVal, varName, name, insideVarName ):
     
-    Arr = df.iat[row, MDL_Array2D1D_col_index]
-    Array2D1D = df.iat[row, count_col_index]
-    index_ = df.iat[row, index_col_index]
-    state = df.iat[row, State_col_index]
+    Arr = df.iat[row, MDL_Count_col_ind12]
+    state = df.iat[row, State_col_ind1]
     string = name + module[posKey][posVal] + varName
     
     if state == "IN":
-        if Arr == '':
+        if Arr == 'nan':
             string = string + '( &' + insideVarName + ' );'
             return string
         else:
-            if index_ > 1:
-                string = string + "_" + Array2D1D + \
-                    '( &' + insideVarName + '[' + Array2D1D + '] );'
-                return string
-            else:
-                string = string + '_Arr' + Arr + '( ' + insideVarName + ' );'
-                return string
+            string = string + '_Arr' + Arr + '( ' + insideVarName + ' );'
+            return string
     else:
-        if Arr == '':
+        if Arr == 'nan':
             string = string + '( ' + insideVarName + ' );'
             return string
         else:
-            if index_ > 1:
-                string = string + "_" + Array2D1D + \
-                    '( ' + insideVarName + '[' + Array2D1D + '] );'
-                return string
-            else:
-                string = string + '_Arr' + Arr + '( ' + insideVarName + ' );'
-                return string
+            string = string + '_Arr' + Arr + '( ' + insideVarName + ' );'
+            return string
 
 def createData(args, df):
+    INDefault = "Rte_Read_RP_"
+    OUTDefault = "Rte_Write_PP_"
     # ------------------------------
     # Data Manipulation
     #createExcelFile(df, 'dfdf.xlsx')
     #print('Creating function call for ' + args.variant)
     string = []
     moduleName = []
-    modName = df.iat[0, Module_col_index]
+    modName = df.iat[0, Module_col_ind13]
     for row in range(df.shape[0]): # Starstr
-        if df.iat[row, frModule_columm_index] in NOT:
+        if df.iat[row, frModule_columm_ind2] in NOT:
             continue
-        MDL_ModVar = df.iat[row, MDL_ModVar_col_index]
-        CAN_Variable = df.iat[row, CAN_Variable_col_index]
-        CAN_ModVar = df.iat[row, CAN_ModVar_col_index]
-        state = df.iat[row, State_col_index]
-        inputFrom = df.iat[row, frModule_columm_index]
+        MDL_ModVar = df.iat[row, MDL_ModVar_col_ind10]
+        CAN_Variable = df.iat[row, CAN_Variable_col_ind14]
+        CAN_ModVar = df.iat[row, CAN_ModVar_col_ind15]
+        state = df.iat[row, State_col_ind1]
+        inputFrom = df.iat[row, frModule_columm_ind2]
         if state == "IN":
             # CAN and VP -------------------------------------------------------
             # INDefault    + posKey  + Module  + MDL_ModVar        + MDL_ModVar
@@ -99,7 +83,7 @@ def createData(args, df):
             # INDefaule    + posKey  + Module  + CAN_ModVar        + MDL_ModVar
             # Rte_Read_RP_ + Feat_   + FS_     + DetFailCode_0     + (uint8 *data)
 
-            posKey = getModPosKey(df, row, frModule_columm_index)
+            posKey = getModPosKey(df, row, frModule_columm_ind2)
             if posKey == 'CAN_VP':
                 if MDL_ModVar != '':
                     if inputFrom == "CAN":  # CAN
@@ -124,7 +108,7 @@ def createData(args, df):
             # CAN and VP -------------------------------------------------------
             # INDefault     + posKey  + Module  + MDL_ModVar            + MDL_ModVar
             # Rte_Write_PP_ + Feat_   + CUS_f_  + CustomCont_AUTO_DRIVE + (boolean data)
-            posKey = getModPosKey(df, row, Module_col_index)
+            posKey = getModPosKey(df, row, Module_col_ind13)
             if posKey == 'CAN_VP':
                 if MDL_ModVar != '':
                     if inputFrom == "CAN":  # CAN
@@ -154,8 +138,14 @@ def createData(args, df):
     
 
 def filterData(args):
+    Module = 'Module'
+    CAN_Variable = 'CAN_Variable'
+    CAN_SigName = 'CAN_SigName'
+    CAN_ModVar = 'CAN_ModVar'
+    MDL_Count = 'MDL_Count'
+
     df = readExcelFile(args.data, inputData)
-    df['Module'] = df['対象モデル']
+    df[Module] = df['対象モデル']
     df['対象モデル'] = df.対象モデル.astype(str).str.lower()
     charMe = args.variant[:-2].lower()
     df = df[df['対象モデル'].str.contains(charMe)]
@@ -166,34 +156,27 @@ def filterData(args):
     else:
     
         #Filter Data from ExtractedData
-        df = df.rename(columns={'SigName(CAN/LIN/MDL)': 'CAN_SigName'})
+        df = df.rename(columns={'SigName(CAN/LIN/MDL)': CAN_SigName})
         
         df['入力元'] = reg_replace(df, '入力元', r'[\(\)]', '')
         for i in unwantedString:
             df['入力元'] = replace(df, '入力元', i, '')
 
-        df['Array2D1D'] = reg_replace(df, 'CAN_SigName', r'.*[^(\d{2})]', '')
-        df['MDL_Array2D1D'] = reg_replace(df, 'MDL_Array2D1D', r'[\[\]]', '')
-        df['MDL_Array2D1D'] = replace(df, 'MDL_Array2D1D', 'nan', '')
-
-        df['count'] = df.groupby(
-            (df['MDL_Variable'] != df['MDL_Variable'].shift(1)).cumsum()).cumcount()+1
-        df['count'] = df['count'] - 1
-        df['count'] = df['count'].astype(str)
-
-        df['CAN_Variable'] = reg_replace(
-            df, 'CAN_SigName', r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '')
-        df['CAN_Variable'] = reg_replace(
-            df, 'CAN_Variable', r'^(\d+)|([\u4e00-\u9fff]+)|([\u3040-\u309Fー]+)|([\u30A0-\u30FF]+)|(-)$', '')
+        df[CAN_Variable] = reg_replace(
+            df, CAN_SigName, r'\[(.*){1,3}\]\[(.*){1,3}\]|\[(.*){1,3}\]', '')
+        df[CAN_Variable] = reg_replace(
+            df, CAN_Variable, r'^(\d+)|([\u4e00-\u9fff]+)|([\u3040-\u309Fー]+)|([\u30A0-\u30FF]+)|(-)$', '')
 
         for i in unwantedString:
-            df['CAN_Variable'] = replace(df, 'CAN_Variable', i, '')
+            df[CAN_Variable] = replace(df, CAN_Variable, i, '')
  
-        df['CAN_ModVar'] = df['入力元'] + '_' + df['CAN_Variable']
+        df[CAN_ModVar] = df['入力元'] + '_' + df[CAN_Variable]
 
-        df['index'] = df.MDL_Variable.map(df.MDL_Variable.value_counts())
+        df[MDL_Count] = reg_replace(df, MDL_Count, r'[\[\]]', '')
+        df[MDL_Count] = df[MDL_Count].astype(str)
+        
 
-        createExcelFile(df, 'Sample.xlsx')
+        #createExcelFile(df, 'Sample.xlsx')
         createData(args, df)
 
 def main(argv):
@@ -211,4 +194,4 @@ if len(sys.argv) > 2:
         main(sys.argv[1:])
 else:
     print(
-        "Please input arguments: python MergingTextFile.py -v [filename].c -d [filename].xlsx")
+        "Please input arguments: python FunctionVariable.py -v [filename].c -d [filename].xlsx")

@@ -208,3 +208,6 @@ df['MDL_Array2D1D'] = reg_replace(df, 'MDL_Array2D1D', r'[\[\]]', '')
 df['MDL_Array2D1D'] = replace(df, 'MDL_Array2D1D', 'nan', '')
 
 
+unwantedString = {'nan', '-', '', np.nan}
+for i in unwantedString:
+df = drop(df, MDL_DataType, i)
