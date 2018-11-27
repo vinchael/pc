@@ -8,16 +8,24 @@ uint8      = 'uint8'
 float32    = 'float32'
 tab        = '    '
 NULL       = 'NULL'
+default_   = 'default'
 double_tab = tab + tab
+triple_tab = double_tab + tab
+four_tab   = triple_tab + tab
+five_tab   = four_tab + tab
 boolean    = 'boolean'
 
 OFF = 0
 ON = 1
 
+# for Sub Sheet name only
+endofrow = 'ここから下は書込み禁止'
+
 # header/footer file 
 Car_Para_FileName_H = ['MDL_Car_Param.h']
 Car_Para_FileName_C = ['MDL_Car_Param.c']
 
+# for Sub sheet only
 
 # include header file on C file
 MDL_Car_Param_h = '#include "MDL_Car_Param.h"\n\n'
@@ -26,17 +34,18 @@ MDL_VC_Param_h  = '#include "MDL_VC_Param.h"\n\n'
 # default array for declaration
 datatype_declaration = [uint8, float32, boolean]
 
-car_type = 'CAR_TYPE'
-market   = 'MARKET'
-map_id   = 'MAP_ID'
-tcm      = 'TCM'
+car_type  = 'CAR_TYPE'
+market    = 'MARKET'
+map_id    = 'MAP_ID'
+tcm       = 'TCM'
+sub_sheet = 'Sub'
 
 exception_sheet = {'CAR_TYPE', 'MARKET', 'SUB'}
-exception_string = {'-', '', NULL}
+exception_string = {'-', '', NULL, 'xxx'}
 
 # Sheet declaration
-contents = 'Contents'
-structure = 'Structure'
+contents = 'Contents'  # 内容   Contents
+structure = 'Structure'    # 構造体 Structure
 
 has_contents = {"CAR_TYPE"}
 
@@ -45,6 +54,11 @@ maru = '○'
 map_maru_col = 0
 cont_struct_row = 0
 maru_count_start = 4
+
+# type code values
+type_code_col = 3
+ten_bytes = 13
+k_CAR_CAR_CODE_INDEX = 'k_CAR_CAR_CODE_INDEX'
 
 # market idx_xxx datatype where to start/end 
 market_float32_start = 'idx_roadedge_v_max_off'
@@ -81,7 +95,7 @@ mp_ss_status = {0: ['ON' , iPAD_CAR_PARA_NUM                    ],
                 }
 
 # CAR_TYPE sheet
-iPAD_F_CAR_PARA_ = {
+iPAD__CAR_PARA_ = {
     'GA9005': '0',
     'FN410' : '1',
     'GA5504': '2',
@@ -212,19 +226,81 @@ iLKS_CAR_PARA_ = {'OTHERS'     : '0' ,
                   'NUM'        : '11'
                  }
 
-dot_atbeginning = {'idx_moving_tire_r', 'idx_CarPara_CAMtoFtAxle',
-                   'idx_nagaoshi_thr', 
-                    }
-first_number = {'idx_vehicle_width',
-                'idx_distance_rw_2_vdc', 'idx_CarPara_CAMtoRrAxle'}
-
-remo_zero = {'idx_ReqBrkPrsBaseCaliper', 'idx_aown_CorrectRate'}
-
 # default is float for MAPPING Definition
 datatype_boolean = {'AUTO_BRK', 'ISS', 'HEV'}
 datatype_uint8 = {'TCM'}
 
 # TCM parameter 
-i_TYPE_ = {'5AT' : ['0'],
-           'CVT' : ['1']
+i_TYPE_ = {'5AT' : ['1'],
+           'CVT' : ['0']
           }
+
+ms2s       = 1 / 1000  # 1ms -> 1s
+kmh2ms     = 1 / 3.6   # km/h->m/s
+spdLsbMax  = 1 / 256   # LSB: 2 ^ 8->1
+mileOffset = 1.609     # mile->meter
+mm2m       = 1 / 1000  # mm -> m
+cm2m       = 1 / 100   # cm -> m
+Nmm2Nm     = 1000      # N/mm→N/m
+_2BYTES    = 65535 * 1 / 256
+
+spd_max = {'MAX' : _2BYTES,
+           'MIN' : '0'
+           }
+
+# check always if there is changes in here
+# MARKET
+mile_htom_s = {'idx_acc_set_spd_max_mile',
+               'idx_acc_set_spd_min_mile',
+               'idx_cc_set_spd_max_mile' ,
+               'idx_cc_set_spd_min_mile'
+               }
+mmtom = {'idx_moving_tire_r',
+         'idx_vehicle_width',
+         'idx_CarPara_CAMtoFtAxle',
+         'idx_CarPara_CAMtoRrAxle',
+        }
+cmtom = {'idx_distance_rw_2_vdc'}
+NmmtoNm = {'idx_EpsCtrlTrqALKLim'}
+mstos = {'idx_nagaoshi_thr'}
+
+
+# changes cheking added idx_xxx in CAR_TYPE
+CAR_TYPE_checking = {'idx_VariantPadTypeF',
+                     'idx_VariantPadTypeR',
+                     'idx_moving_tire_r',
+                     'idx_vehicle_weight',
+                     'idx_rs_0degree_c',
+                     'idx_rs_1degree_c',
+                     'idx_rs_2degree_c',
+                     'idx_add_mtr_correct',
+                     'idx_SpecR79',
+                     'idx_did_select_tbl',
+                     'idx_vehicle_width',
+                     'idx_spec_manual_mode',
+                     'idx_eng_rev_min_lim',
+                     'idx_gear_ratio_max',
+                     'idx_gear_ratio_min',
+                     'idx_final_gear',
+                     'idx_distance_rw_2_vdc',
+                     'idx_variant_pt',
+                     'idx_variant_tm',
+                     'idx_variant_for_ldp',
+                     'idx_EpsCtrlTrqALKLim',
+                     'idx_SpecALKSwMemory',
+                     'idx_lks_default',
+                     'idx_variant_for_lks',
+                     'idx_CarPara_CAMtoFtAxle',
+                     'idx_CarPara_CAMtoRrAxle',
+                     'idx_spec_cc_type',
+                     'idx_spec_cc_sw_type',
+                     'idx_nagaoshi_thr',
+                     'idx_vdc_offmode',
+                     'idx_ReqBrkPrsBaseF',
+                     'idx_ReqBrkPrsBaseR',
+                     'idx_ReqBrkPrsBaseCaliper',
+                     'idx_VelCoefficientF',
+                     'idx_VelCoefficientR',
+                     'idx_aown_CorrectRate',
+                     'idx_vso_error'
+                     }

@@ -3,6 +3,7 @@ import sys
 import os
 
 def start_process(df, dic):
+
     # creating header in file
     for i in Car_Para_FileName_H:
         create_header(i, "_H")
@@ -14,7 +15,10 @@ def start_process(df, dic):
     write_1line(Car_Para_FileName_C[0], MDL_Car_Param_h)
     #write_1line(Car_Para_FileName_C[1], MDL_VC_Param_h)
 
+    #create_type_code(df['CAR_TYPE'], dic, 197)
     create_contents(df, dic)
+    #create_contentsforSub(df['Sub'], dic)
+
 
     # creating footer in file
     for i in Car_Para_FileName_H:
@@ -31,7 +35,7 @@ def main(argv):
         count = 0
         xls = readExcelFile(filename)
         for sheet_name in xls.sheet_names:
-            print('Sheet name:', sheet_name, 'index:',count)
+            #print('Sheet name:', sheet_name, 'index:',count)
             df[sheet_name] = xls.parse(sheet_name)
             dic[count] = sheet_name
             count = count + 1

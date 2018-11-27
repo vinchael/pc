@@ -1,22 +1,3 @@
-iATTYPE_5AT  = 3
-iATTYPE_CVT1 = 1
-iATTYPE_CVT2 = 7
-k_TCMType_CAN_TBL1 = [iATTYPE_5AT, iATTYPE_CVT1]
-k_TCMType_CAN_TBL2 = [iATTYPE_5AT, iATTYPE_CVT2]
-
-iCARTYPE_INVALID = 255
-iCARTYPE_NOCHECK = 254
-
-
-iAWD_ACT4 = 0
-iAWD_VTD  = 1
-iAWD_2WD  = 2
-k_AWD_CAN_TBL = [
-                 [iCARTYPE_INVALID, iAWD_ACT4, iAWD_VTD],
-                 [iCARTYPE_INVALID, iAWD_ACT4, iAWD_VTD],
-                 [iAWD_2WD        , iAWD_ACT4, iAWD_VTD],
-                 [iCARTYPE_INVALID, iAWD_ACT4, iCARTYPE_INVALID]
-                 ]
 # CAR TYPE map definition
 iDID_SELECT_TBL_ = {'DOM' : '0',
                     'NULL': '1',
@@ -65,6 +46,7 @@ iSPEC_ALK_MEM_ = {'LAST_MEM'    : '0',
                   'DEFAULT_ON'  : '1',
                   'DEFAULT_OFF' : '2'
                  }
+                 
 iSPEC_VDCSW_ = {'3MODE' : '0',
                 '2MODE' : '1'
                 }

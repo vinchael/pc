@@ -1,5 +1,50 @@
 from Util import *
 
+def create_car_type_code(df, dic, maru_count):
+    h = Car_Para_FileName_H[0]
+    c = Car_Para_FileName_C[0]
+    type_code_declaration, type_code_definition = [], []
+
+
+    type_code_declaration.append(
+        extern                  + ' ' +
+        const                   + ' ' +
+        datatype_declaration[0] + ' ' +
+        k_CAR_CAR_CODE_INDEX    + '[' +
+        str(maru_count)         + '][10];\n'
+    )
+
+
+    type_code_definition.append(
+        const + ' ' +
+        datatype_declaration[0] + ' '       +
+        k_CAR_CAR_CODE_INDEX    + '['       +
+        str(maru_count)         + '][10] =' +
+        '\n{\n'                 + tab       + 
+        '{\n'                   + double_tab
+    )
+    for m in range(maru_count_start, df.shape[0]):
+        map_maru_val = df.iat[m, map_maru_col]
+        if map_maru_val == maru:
+            for i in range(type_code_col, ten_bytes):
+                type_code_value = df.iat[m, i]
+                type_code_value = type_code_value.replace('$', '')
+                type_code_dec = int(type_code_value, 16)
+
+                type_code_definition.append(
+                    str(type_code_dec) + ', '
+                )
+
+            type_code_definition.append(
+                tab    + '/*'   +
+                tab    + str(m - maru_count_start) +
+                tab    + '*/'   +
+                ('\n' + tab + '}\n};\n' if m == (df.shape[0] - 2)
+                 else '\n' + tab + '},\n' + tab + '{\n' + double_tab)
+                )
+
+    write_list(h, type_code_declaration)
+    write_list(c, type_code_definition)
 
 def create_contents(df, dic):
     h = Car_Para_FileName_H[0]
@@ -7,39 +52,46 @@ def create_contents(df, dic):
     # sheet value
     key_count = len(dic.keys())
 
+    structure_name_holder = ""
+
     for i in range(4, key_count):
-        # sheet_value is equal to Sheet name
-        sheet_value = dic[i]
+        # sheet_name is equal to Sheet name
+        sheet_name = dic[i]
         save_variable, market_intfloat_flag = '', 0
         contents_flag, structure_flag, svn_flag = 0, 0, 0
         counter, ten_only = 0, 0
 
-        contents_declaration ,  contents_definition = [], []
-        structure_declaration, structure_definition = [], []
-        map_declaration      , map_definition       = [], []
-        map_id_declaration   , map_id_definition    = [], []
+        contents_declaration   , contents_definition    = [], []
+        structure_declaration  , structure_definition   = [], []
+        default_str_declaration, default_str_definition = [], []
+        map_declaration        , map_definition         = [], []
+        map_id_declaration     , map_id_definition      = [], []
         
         # read column data
-        print('Sheet name:', sheet_value, "Total column count:", df[sheet_value].shape[1] - 1)
-        for j in range(0,df[sheet_value].shape[1]):
+        # print('Sheet name:', sheet_name, "Total column count:", df[sheet_name].shape[1] - 1)
+        for j in range(0,df[sheet_name].shape[1]):
+            # default_xxx maru flag to check if it has default value
+            # maru_flag set to 0 whenever changing column
+            default_maru_flag = 1
             # if sheet name is equal to MAP_ID skip
-            if sheet_value == map_id:
+            if (sheet_name == map_id) and (sheet_name == sub_sheet):
                 continue
             # if 'Structure' text was found
-            if (df[sheet_value].iat[cont_struct_row, j] == structure) and \
-                (str(df[sheet_value].iat[cont_struct_row + 1, j]) not in exception_string):
+            if (df[sheet_name].iat[cont_struct_row, j] == structure) and \
+                (str(df[sheet_name].iat[cont_struct_row + 1, j]) not in exception_string):
                 contents_flag  = 0
                 structure_flag = 1
+                structure_name_holder = df[sheet_name].iat[cont_struct_row + 1, j]
             # if it has contents 
-            if (df[sheet_value].iat[cont_struct_row, j] == contents) and (sheet_value in has_contents):
+            if (df[sheet_name].iat[cont_struct_row, j] == contents) and (sheet_name in has_contents):
                 contents_flag = 1
 
             if contents_flag:
-                contents_value = df[sheet_value].iat[cont_struct_row + 1, j]
+                contents_value = df[sheet_name].iat[cont_struct_row + 1, j]
                 if contents_value in exception_string:
                     pass
                 else:
-                    if sheet_value == car_type:
+                    if sheet_name == car_type:
                         contents_declaration.append(
                             extern                  + ' ' +
                             const                   + ' ' +
@@ -52,8 +104,8 @@ def create_contents(df, dic):
                         bit_shift_val_Arr = []
                         dec_shift_val_Arr = []
                         
-                        bit_var_name     = df[sheet_value].iat[cont_struct_row + 1, j]
-                        bit_str_position = df[sheet_value].iat[cont_struct_row + 2, j]
+                        bit_var_name     = df[sheet_name].iat[cont_struct_row + 1, j]
+                        bit_str_position = df[sheet_name].iat[cont_struct_row + 2, j]
 
                         bit_loc = getchar(bit_str_position, 1)
                         bit_L   = getchar(bit_str_position, 3)
@@ -86,27 +138,39 @@ def create_contents(df, dic):
                             )
             
             if svn_flag:
-                structure_value = df[sheet_value].iat[cont_struct_row + 1, j]
-                if (structure_value == market_float32_start) and (sheet_value == market):
+                structure_name = df[sheet_name].iat[cont_struct_row + 1, j]
+                # checking changes in CAR_TYPE structures
+                if ((structure_name not in CAR_TYPE_checking) and (sheet_name == car_type)) and ( structure_name not in exception_string):
+                    print( "Sheet name:", sheet_name, "Structure added:", structure_name)
+
+                if (structure_name == market_float32_start) and (sheet_name == market):
                     market_intfloat_flag = 1
-                if (structure_value == market_uint8_start)   and (sheet_value == market):
+                if (structure_name == market_uint8_start)   and (sheet_name == market):
                     market_intfloat_flag = 0
 
-                if structure_value in exception_string:
+                if structure_name in exception_string:
                     pass
                 else:
-                    if sheet_value == market:
+                    if sheet_name == market:
                         if market_intfloat_flag:
                             structure_declaration.append(
                                 extern + ' ' +
                                 const + ' ' +
                                 datatype_declaration[1] + ' ' +
-                                str(structure_value) + ';\n'
+                                str(structure_name) + ';\n'
+                            )
+                            # default_xxx declaration
+                            default_str_declaration.append(
+                                extern + ' ' +
+                                const + ' ' +
+                                datatype_declaration[1] + ' ' +
+                                default_ +
+                                str(structure_name[3:]) + ';\n'
                             )
                             structure_definition.append(
                                 const + ' ' +
                                 datatype_declaration[1] + ' ' +
-                                str(structure_value) + ' = ' +
+                                str(structure_name) + ' = ' +
                                 str(counter) + '.F;\n'
                             )
                         else:
@@ -114,35 +178,52 @@ def create_contents(df, dic):
                                 extern + ' ' +
                                 const + ' ' +
                                 datatype_declaration[0] + ' ' +
-                                str(structure_value) + ';\n'
+                                str(structure_name) + ';\n'
+                            )
+                            # default_xxx declaration
+                            default_str_declaration.append(
+                                extern + ' ' +
+                                const + ' ' +
+                                datatype_declaration[0] + ' ' +
+                                default_ +
+                                str(structure_name[3:]) + ';\n'
                             )
                             structure_definition.append(
                                 const + ' ' +
                                 datatype_declaration[0] + ' ' +
-                                str(structure_value) + ' = ' +
+                                str(structure_name) + ' = ' +
                                 str(counter) + ';\n'
                             )
+                            # default definition
                     else:
                         structure_declaration.append(
                             extern + ' ' +
                             const + ' ' +
                             datatype_declaration[0] + ' ' +
-                            str(structure_value) + ';\n'
+                            str(structure_name) + ';\n'
+                        )
+                        # default_xxx declaration
+                        default_str_declaration.append(
+                            extern + ' ' +
+                            const + ' ' +
+                            datatype_declaration[0] + ' ' +
+                            default_ +
+                            str(structure_name[3:]) + ';\n'
                         )
                         structure_definition.append(
                             const + ' ' +
                             datatype_declaration[0] + ' ' +
-                            str(structure_value) + ' = ' +
+                            str(structure_name) + ' = ' +
                             str(counter) + ';\n'
                         )
                     counter = counter + 1
                     
                 # for map definition
-                if structure_value in exception_string:
+                if structure_name in exception_string:
                     pass
                 else:
-                    for m in range(maru_count_start, df[sheet_value].shape[0]):
-                        map_maru_val = df[sheet_value].iat[m, map_maru_col]
+                    for m in range(maru_count_start, df[sheet_name].shape[0]):
+                        map_maru_val = df[sheet_name].iat[m, map_maru_col]
                         if map_maru_val == maru:
                             if ten_only == 10:
                                 ten_only = 0
@@ -152,112 +233,123 @@ def create_contents(df, dic):
                                     '  */\n' + double_tab
                                 )
                             if ten_only < 10:
-                                map_value = df[sheet_value].iat[m, j]
+                                map_value = df[sheet_name].iat[m, j]
                                 # CAR_TYPE processing
-                                if (structure_value in k_CAR_SELECT_SPEC) and (sheet_value == car_type):
-                                    if str(map_value) in k_CAR_SELECT_SPEC[structure_value][0]:
-                                        map_definition.append(
-                                            str(k_CAR_SELECT_SPEC[structure_value][0].get(
-                                                map_value)) + '.F, '
-                                        )
-                                    else:
-                                        if structure_value in dot_atbeginning:
-                                            map_value = str(
-                                                map_value).replace('.', '')
-                                            map_definition.append('0.' +
-                                                                  str(map_value) +
-                                                                  'F, '
-                                                                  )
-                                        elif structure_value in first_number:
-                                            no_dot = str(
-                                                map_value).replace('.', '')
-                                            map_value = no_dot[:1] + \
-                                                '.' + no_dot[1:]
-                                            map_definition.append(str(map_value) +
-                                                                  'F, '
-                                                                  )
-                                        elif structure_value in remo_zero:
-                                            no_dot = str(
-                                                map_value).replace('.', '')
-                                            map_value = no_dot[2:]
-                                            map_value = no_dot[:1] + \
-                                                '.' + no_dot[1:]
-                                            map_definition.append(str(map_value) +
-                                                                  'F, '
-                                                                  )
+                                if sheet_name == car_type:
+                                    if structure_name in k_CAR_SELECT_SPEC:
+                                        if str(map_value) in k_CAR_SELECT_SPEC[structure_name][0]:
+                                            append_F_pF(map_definition, str(
+                                                k_CAR_SELECT_SPEC[structure_name][0].get(map_value)))
+                                            if default_maru_flag:
+                                                default_maru_definition(
+                                                    default_str_definition, structure_name, str(
+                                                        k_CAR_SELECT_SPEC[structure_name][0].get(map_value)))
                                         else:
-                                            if '.' in str(map_value):
-                                                map_definition.append(
-                                                    str(map_value) + 'F, '
-                                                )
-                                            else:
-                                                map_definition.append(
-                                                    str(map_value) + '.F, '
-                                                )
-                                elif (structure_value not in k_CAR_SELECT_SPEC) and (sheet_value == car_type):
-                                    print("Sheet name:", sheet_value,"idx_xxx:", structure_value)
+                                            print(
+                                                "Not in k_CAR_SELECT_SPEC", structure_name, str(map_value))
+                                    elif structure_name in mmtom:
+                                        map_value = float(map_value) * mm2m
+                                        append_F_pF(map_definition, str(map_value))
+                                        if default_maru_flag:
+                                            default_maru_definition(
+                                                default_str_definition, structure_name, str(map_value))
+                                    elif structure_name in cmtom:
+                                        map_value = map_value * cm2m
+                                        append_F_pF(map_definition, str(map_value))
+                                        if default_maru_flag:
+                                            default_maru_definition(
+                                                default_str_definition, structure_name, str(map_value))
+                                    elif structure_name in NmmtoNm:
+                                        map_value = map_value * Nmm2Nm
+                                        append_F_pF(map_definition, str(map_value))
+                                        if default_maru_flag:
+                                            default_maru_definition(
+                                                default_str_definition, structure_name, str(map_value))
+                                    elif structure_name in mstos:
+                                        map_value = map_value * ms2s
+                                        append_F_pF(map_definition,
+                                                    str(map_value))
+                                        if default_maru_flag:
+                                            default_maru_definition(
+                                                default_str_definition, structure_name, str(map_value))                                   
+                                    else:
+                                        append_F_pF(map_definition, str(map_value))
+                                        if default_maru_flag:
+                                            default_maru_definition(
+                                                default_str_definition, structure_name, str(map_value))
                                 # MARKET processing
-                                elif (structure_value in k_MARKET_SELECT_SPEC) and (sheet_value == market):
-                                    if str(map_value) in k_MARKET_SELECT_SPEC[structure_value][0]:
-                                        map_definition.append(
-                                            str(k_MARKET_SELECT_SPEC[structure_value][0].get(
-                                                map_value)) + '.F, ')
-                                    else:
-                                        if '.' in str(map_value):
-                                            map_definition.append(
-                                                str(map_value) + 'F, '
-                                            )
+                                elif sheet_name == market:
+                                    if structure_name in mile_htom_s:
+                                        map_value = map_value * mileOffset * kmh2ms
+                                        append_F_pF(map_definition, str(map_value))
+                                        if default_maru_flag:
+                                            default_maru_definition(
+                                                default_str_definition, structure_name, str(map_value))
+                                    elif structure_name in k_MARKET_SELECT_SPEC:
+                                        if str(map_value) in k_MARKET_SELECT_SPEC[structure_name][0]:
+                                            append_F_pF(
+                                                map_definition, k_MARKET_SELECT_SPEC[structure_name][0].get(map_value))
+                                            if default_maru_flag:
+                                                default_maru_definition(
+                                                    default_str_definition, structure_name, k_MARKET_SELECT_SPEC[structure_name][0].get(map_value))
                                         else:
-                                            map_definition.append(
-                                                str(map_value) + '.F, '
-                                            )
-                                elif (structure_value not in k_MARKET_SELECT_SPEC) and (sheet_value == market):
-                                    print("Sheet name:", sheet_value, "idx_xxx :", structure_value)
-                                elif sheet_value in datatype_boolean:
+                                            print(
+                                                "Not in k_MARKET_SELECT_SPEC", structure_name, str(map_value))
+                                    else:
+                                        map_value = map_value * kmh2ms
+                                        append_F_pF(map_definition, str(map_value))
+                                        if default_maru_flag:
+                                            default_maru_definition(
+                                                default_str_definition, structure_name, str(map_value))
+                                elif sheet_name in datatype_boolean:
                                     map_definition.append(
                                         (str(OFF) + ', ') if str(map_value) == 'OFF' else (str(ON) + ', '))
-                                elif (sheet_value in datatype_uint8) and (sheet_value == tcm):
+                                    if default_maru_flag:
+                                        default_maru_def_ub(
+                                            default_str_definition, structure_name, (str(OFF)) if str(map_value) == 'OFF' else (str(ON)))
+                                elif sheet_name in datatype_uint8:
                                     if str(map_value) in i_TYPE_:
                                         map_definition.append(
                                             str(i_TYPE_[map_value][0]) + ', ')
+                                        if default_maru_flag:
+                                            default_maru_def_ub(
+                                                default_str_definition, structure_name, i_TYPE_[map_value][0])
                                     else:
-                                        print("Sheet : ", sheet_value, "values : ", map_value)
-                                # addition of elif for remaining sheet
-
-                                # else defaul value
+                                        print("Sheet : ", sheet_name, "values : ", map_value)
                                 else:
-                                    if '.' in str(map_value):
-                                        map_definition.append(
-                                            str(map_value) + 'F, '
-                                        )
-                                    else:
-                                        map_definition.append(
-                                            str(map_value) + '.F, '
-                                        )
+                                    append_F_pF(map_definition, str(map_value))
+                                    if default_maru_flag:
+                                        default_maru_definition(
+                                            default_str_definition, structure_name, str(map_value))
                             ten_only = ten_only + 1
-
+                            default_maru_flag = 0
                     # after end of map[][]
-                    map_definition.append(
-                        ('\n' + tab + '}\n' if j == (df[sheet_value].shape[1] - 1)
-                            else '\n' + tab + '},\n' + tab + '{\n' + double_tab)
-                    )
+                    if sheet_name in exception_sheet:
+                        map_definition.append(
+                            ('\n' + tab + '}\n' if j == (df[sheet_name].shape[1] - 1)
+                                else '\n' + tab + '},\n' + tab + '{\n' + double_tab)
+                        )
 
             if structure_flag:
-                    save_variable = df[sheet_value].iat[cont_struct_row + 1, j]
+                    save_variable = df[sheet_name].iat[cont_struct_row + 1, j]
                     if save_variable in exception_string:
                         svn_flag = 0
                     else:
                         svn_flag = 1
                     structure_flag = 0
 
-        # read row data
-        maru_count = 0
-        col = 0
-        for i in range(maru_count_start, df[sheet_value].shape[0]):
-            if df[sheet_value].iat[i, col] == maru:
-                maru_count = maru_count + 1
         if svn_flag:
-            if sheet_value not in exception_sheet:
+            # read row data
+            maru_count = 0
+            col = 0
+            dec_count = 0
+            dec_list  = []
+            for i in range(maru_count_start, df[sheet_name].shape[0]):
+                if df[sheet_name].iat[i, col] == maru:
+                    maru_count = maru_count + 1
+                    dec_list.append(str(dec_count))
+                dec_count = dec_count + 1
+            if sheet_name not in exception_sheet:
                 map_declaration.append(
                     extern + ' ' +
                     const + ' ' +
@@ -276,7 +368,7 @@ def create_contents(df, dic):
                 )
         
         # map_id creation
-        if sheet_value == map_id:
+        if sheet_name == map_id:
             for i in mp_ss_status:
                 value = [0, 0, 0, 0]
                 ind, map_id_counter = 0, 0
@@ -284,8 +376,8 @@ def create_contents(df, dic):
                     for j in mp_ss_status[i][1]:
                         value[ind] = j
                         ind = ind + 1
-                    for k in range(value[0],df[sheet_value].shape[0] - 1):
-                        map_id_values = df[sheet_value].iat[k, map_id_param_col]
+                    for k in range(value[0],df[sheet_name].shape[0] - 1):
+                        map_id_values = df[sheet_name].iat[k, map_id_param_col]
                         if map_id_values == NULL:
                             break
                         map_id_declaration.append(
@@ -307,47 +399,144 @@ def create_contents(df, dic):
                         extern                                       + ' ' +
                         const                                        + ' ' +
                         value[2]                                     + ' ' +
-                        str(df[sheet_value].iat[value[1], map_id_cnt_col]) +
+                        str(df[sheet_name].iat[value[1], map_id_cnt_col]) +
                         ';\n'
                     )
                     map_id_definition.append(
                         const                                        + ' ' +
                         value[2]                                     + ' ' +
-                        str(df[sheet_value].iat[value[1], map_id_cnt_col]) +
+                        str(df[sheet_name].iat[value[1], map_id_cnt_col]) +
                         ' = ' + str(map_id_counter) +
                         ('' if value[2] == uint8 else '.F')          + ';\n'
                     )
         
         # addition to map definition 
         if svn_flag:
-            if sheet_value in datatype_boolean:
-                map_definition_add = str(const) + ' ' + datatype_declaration[2] + ' ' + str(save_variable) + "[" \
-                + str(counter) + '][' + str(maru_count) + \
-                      '] = ' + '\n{\n' + str(tab) + '{\n' + double_tab
-            elif sheet_value in datatype_uint8:
-                map_definition_add = str(const) + ' ' + datatype_declaration[0] + ' ' + str(save_variable) + "[" \
-                + str(counter) + '][' + str(maru_count) + \
-                      '] = ' + '\n{\n' + str(tab) + '{\n' + double_tab
+            if sheet_name in datatype_boolean:
+                map_definition_add = str(const) + ' ' + datatype_declaration[2] + ' ' + str(save_variable) + \
+                '[' + str(maru_count) + '] = ' + '\n{' + str(tab) + '\n' + tab
+            elif sheet_name in datatype_uint8:
+                map_definition_add = str(const) + ' ' + datatype_declaration[0] + ' ' + str(save_variable) + \
+                    '[' + str(maru_count) + '] = ' + '\n{' + str(tab) + '\n' + tab
             else:
-                map_definition_add = str(const) + ' ' + datatype_declaration[1] + ' ' + str(save_variable) + "[" \
-                    + str(counter) + '][' + str(maru_count) + \
-                    '] = ' + '\n{\n' + str(tab) + '{\n' + double_tab
+                if sheet_name in exception_sheet:
+                    map_definition_add = str(const) + ' ' + datatype_declaration[1] + ' ' + str(save_variable) + "[" \
+                        + str(counter) + '][' + str(maru_count) + \
+                        '] = ' + '\n{\n' + str(tab) + '{\n' + double_tab
+                else:
+                    map_definition_add = str(const) + ' ' + datatype_declaration[1] + ' ' + str(save_variable) + \
+                        '[' + str(maru_count) + \
+                        '] = ' + '\n{' + str(tab) + '\n' + tab
                 
             map_definition.insert(0, map_definition_add)
             # closing brackets for map [][]
-            map_definition.append("}\n")
+            if sheet_name in exception_sheet:
+                map_definition.append("};\n")
+            else:
+                map_definition.append("\n};\n")
 
         # h file
-        write_1line(h, "/* --- " + sheet_value + " --- */\n" )
+        write_1line(h, "/* --- " + sheet_name + " --- */\n" )
         write_list(h, contents_declaration)
         write_list(h, structure_declaration)
+        write_list(h, default_str_declaration)
         write_list(h, map_declaration)
         write_list(h, map_id_declaration)
 
 
         # c file
-        write_1line(c, "/* --- " + sheet_value + " --- */\n")
+        write_1line(c, "/* --- " + sheet_name + " --- */\n")
         write_list(c, contents_definition)
         write_list(c, structure_definition)
+        write_list(c, default_str_definition)
         write_list(c, map_id_definition)
         write_list(c, map_definition)
+
+        if svn_flag:
+            if sheet_name == car_type:
+                create_car_type_code(df[sheet_name], dic, maru_count)
+            else:
+                create_type_code(df, sheet_name, dic, maru_count, dec_count, dec_list, structure_name_holder)
+
+def create_contentsforSub(df, dic):
+    row_count, column_count, last_val = 0, 0, 0
+    save_row_count, save_column_count = [], []
+    k_reserve = ''
+    k_declaration        , k_definition        = [], []
+    k_default_declaration, k_default_definition = [], []
+
+    # shape[1] means column
+    for i in range(0, df.shape[1]):
+        k_value = df.iat[0,i]
+        if k_value in exception_string:
+            continue
+        if 'k_' in k_value:
+            k_reserve = k_value
+            # shape[0] means row
+            for j in range(2, df.shape[0]):
+                row_value = df.iat[j,i]
+                if row_value == endofrow:
+                    break
+                row_count = row_count + 1
+            save_row_count.append(str(row_count))
+            row_count = 0
+        if k_reserve == k_value:
+            column_count = 0
+        else:
+            if last_val > column_count:
+                save_column_count.append(last_val)
+            column_count = column_count + 1
+            last_val = column_count
+            
+            k_declaration.append(
+                extern + ' ' +
+                const  + ' ' +
+                datatype_declaration[1] + ' ' +
+                str(k_reserve) + '_' +
+                str(k_value)
+            )
+    save_column_count.append(column_count)
+
+    
+    print(save_column_count, save_row_count)
+    for i in save_column_count:
+        for j in range(int(i)):
+            pass
+
+def create_type_code(df, sheet_name, dic, maru_count, dec_count, dec_list, structure_name_holder):
+    h = Car_Para_FileName_H[0]
+    c = Car_Para_FileName_C[0]
+
+    ten_only = 0
+    type_code_declaration, type_code_definition = [], []
+
+    structure_name = structure_name_holder[:-11]
+    structure_name = structure_name + "CAR_CODE_INDEX"
+    type_code_declaration.append(
+        extern + ' ' +
+        const + ' ' +
+        datatype_declaration[0] + ' ' +
+        structure_name + '[' +
+        str(maru_count) + '];\n'
+    )
+
+    type_code_definition.append(
+        const + ' ' +
+        datatype_declaration[0] + ' ' +
+        structure_name + '[' +
+        str(maru_count) + '] = \n{\n' +
+        tab
+    )
+
+    for i in dec_list:
+        if ten_only == 10:
+            type_code_definition.append('\n' + tab )
+        if ten_only < 10:
+            type_code_definition.append(
+                str(i) + ', '
+            )
+    type_code_definition.append('\n};')
+    
+
+    write_list(h, type_code_declaration)
+    write_list(c, type_code_definition)
