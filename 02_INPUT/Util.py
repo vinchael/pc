@@ -8,6 +8,17 @@ from pandas import ExcelWriter
 import numpy as np
 import re
 
+
+def create_dataframe_dimen(filename):
+    xlsx = readExcelFile(filename)
+    df = pd.read_excel(xlsx, 'Sheet1')
+
+    df = df.fillna('0')
+
+    df = df.drop_duplicates(subset=['Parameter'], keep='last')
+
+    return (df)
+
 def createExcelFile(df, filename):
     writer = ExcelWriter(filename)
     df.to_excel(writer, 'Sheet1', index=False)

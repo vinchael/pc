@@ -73,9 +73,6 @@ twoDiLKS = {
 }
 
 # PT
-# KASOKU_MODE_GAIN_TUIBI_936 KASOKU_MODE_GAIN_TEISOKU_936
-# k_eg_cvt_rate_936 TOWING_LIMIT_936 THR_OFF_EGTRQ_936
-# ATM_RDTRQ_4TRQ_936
 oneDPT = {
     'RPM_FBINH': '17',
     'TRQ_FCUT': '10',
@@ -97,9 +94,9 @@ oneDPT = {
     'FMW_FM': '24',
     #
     'KASOKU_MODE' : '10',
-    'k_eg' : '1',
-    'TOWING_LIMIT' : '1',
-    'THR_OFF' : '1',
+    'k_eg' : '4',
+    'TOWING_LIMIT' : '3',
+    'THR_OFF' : '4',
     'ATM_RDTRQ' : '17',
     'FMW_ACTUAL' : '24'
 }
@@ -115,9 +112,9 @@ twoDPT = {
     'ATRBRK_DFB': ['13', '6'],
     'EG_AFB': ['13', '6'],
     'TJA_STR': ['11', '16'],
-    'ATM_RDTRQ': ['1', '17'],
-    'THR_OFF': ['1', '9'],
-    'KASOKU_MODE': ['1', '10'],
+    'ATM_RDTRQ': ['2', '17'],
+    'THR_OFF': ['4', '9'],
+    'KASOKU_MODE': ['4', '10'],
 }
 
 create_data_variant = {   #sinle row,  double row,col
@@ -177,22 +174,23 @@ def is_valid(result, row, col):
             return 1
     else:
         return 0
-
+    
 def display_map_id(result, row, col, cur_value, create_data, parameter_name_value):
+    remove_braces = result.iat[row, col]
+    additional_name = re.match(
+        "^(.*?_.*?)_", str(parameter_name_value)).group(1)
     if cur_value == 1:
-        remove_braces = result.iat[row, col]
         #print(remove_braces, '1')
         remove_braces = remove_braces[1:-5]
         holder_name = re.match("^(.*?_.*?)_", str(remove_braces)).group(1)
         create_data.append(
             'for (uint8 i = 0; i < ' + str(create_data_variant[parameter_name_value][0].get(holder_name)[0]) +
             '; i++)\n' + triple_tab + '{\n' + four_tab +
-            str(holder_name) + '[i] = ' + str(remove_braces) +
+            str(additional_name) + '_' + str(holder_name) + '[i] = ' + str(remove_braces) +
             '[i];\n' + triple_tab + '}\n'
         )
         
     elif cur_value == 2:
-        remove_braces = result.iat[row, col]
         #print(remove_braces, '2')
         remove_braces = remove_braces[1:-10]
         holder_name = re.match("^(.*?_.*?)_", str(remove_braces)).group(1)
@@ -201,28 +199,65 @@ def display_map_id(result, row, col, cur_value, create_data, parameter_name_valu
             '; i++)\n' + triple_tab + '{\n' + four_tab +
             'for (uint8 j = 0; j < ' + str(create_data_variant[parameter_name_value][1].get(holder_name)[1]) +
             '; i++)\n' + four_tab + '{\n' + five_tab +
-            str(holder_name) + '[i][j] = ' + str(remove_braces) +
+            str(additional_name) + '_' + str(holder_name) + '[i][j] = ' + str(remove_braces) +
             '[i][j];\n' + four_tab + '}\n' + triple_tab + '}\n'
         )
         
     else:
-        remove_braces = result.iat[row, col]
         if remove_braces in map_valid_values:
             create_data.append(
-                str(remove_braces) + '_' + ' = ' + str(remove_braces) + ';\n'
+                str(additional_name) + '_' + str(remove_braces) +
+                '_' + ' = ' + str(remove_braces) + ';\n'
             )
         else:
             remove_braces = str(remove_braces).replace('&', '')
             holder_name = remove_braces[:6]
             create_data.append(
-                str(holder_name) + ' = ' + str(remove_braces) + ';\n'
+                str(additional_name) + '_' + str(holder_name) +
+                ' = ' + str(remove_braces) + ';\n'
             )
         
     return(create_data)
 
-
-def create_static_variable(result, row, col):
-    pass
+def create_static_variable(result, row, col, cur_value, create_data, parameter_name_value):
+    create_data_static = []
+    remove_braces = result.iat[row, col]
+    additional_name = re.match(
+        "^(.*?_.*?)_", str(parameter_name_value)).group(1)
+    if cur_value == 1:
+        
+        #print(remove_braces, '1')
+        remove_braces = remove_braces[1:-5]
+        holder_name = re.match("^(.*?_.*?)_", str(remove_braces)).group(1)
+        create_data_static.append(
+            'static float32 ' + str(additional_name) + '_' + str(holder_name) +
+            '[' + str(create_data_variant[parameter_name_value][0].get(holder_name)[0]) +
+            '] = {0.F};\n'
+        )
+    elif cur_value == 2:
+        #print(remove_braces, '2')
+        remove_braces = remove_braces[1:-10]
+        holder_name = re.match("^(.*?_.*?)_", str(remove_braces)).group(1)
+        create_data_static.append(
+            'static float32 ' + str(additional_name) + '_' + str(holder_name) +
+            '[' + str(create_data_variant[parameter_name_value][1].get(holder_name)[0]) + ']' +
+            '[' + str(create_data_variant[parameter_name_value][1].get(holder_name)[1]) + ']' +
+            ' = {0.F};\n'
+        )
+    else:
+        if remove_braces in map_valid_values:
+            create_data_static.append(
+                'static float32 ' + str(additional_name) + '_' +
+                str(remove_braces) + '_ = 0.F;\n'
+            )
+        else:
+            remove_braces = str(remove_braces).replace('&', '')
+            holder_name = remove_braces[:6]
+            create_data_static.append(
+                'static float32 ' + str(additional_name) + '_' +
+                str(holder_name) + ' = 0.F;\n'
+            )
+    write_list('CarParaMap_Variable.c', create_data_static)
 
 def creating_data(result, parameter_name_value):
     create_data = []
@@ -248,8 +283,6 @@ def creating_data(result, parameter_name_value):
                     tab + 'switch (' + parameter_name_value +
                     ')\n' + tab + '{\n' + double_tab
                 )
-                # create static variable
-                create_static_variable(result, row, col)
             
             if is_valid(result,row,col) and row_counter != 0:
                 cur_value = result.iat[row,col]
@@ -279,8 +312,10 @@ def creating_data(result, parameter_name_value):
                     create_data.append(
                         triple_tab + 'break;\n' + double_tab + '}\n'
                     )
+                    create_static_variable(
+                        result, row - (row_counter_map_id - 1), col, cur_value, create_data, parameter_name_value)
     
-    write_list('Sample.c', create_data)
+    write_list('CarParaMap.c', create_data)
 
 def start_process(df, dic):
     get_detailed_action(df['LIST'])
@@ -321,8 +356,8 @@ def main(argv):
             dic[count] = sheet_name
             count = count + 1
         # --START--
-        #start_process(df, dic)
-        creating_data(df['Sheet2'], 'iTM_CAR_PARA_')
+        start_process(df, dic)
+        #creating_data(df['Sheet2'], 'iTM_CAR_PARA_')
 
 if __name__ == "__main__":
     #print(__name__)
