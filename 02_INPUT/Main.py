@@ -12,10 +12,10 @@ def start_process(df, dic):
         create_header(i, "_C")
     
     # addition of inlude
-    write_1line(Car_Para_FileName_C[0], MDL_Car_Param_h)
+    write_1line (Car_Para_FileName_C[0], MDL_Car_Param_h)
     #write_1line(Car_Para_FileName_C[1], MDL_VC_Param_h)
+    write_1line (Car_Para_FileName_H[0], Rte_Type)
 
-    #create_type_code(df['CAR_TYPE'], dic, 197)
     create_contents(df, dic)
     #create_contentsforSub(df['Sub'], dic)
 

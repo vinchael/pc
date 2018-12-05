@@ -30,6 +30,7 @@ Car_Para_FileName_C = ['MDL_Car_Param.c']
 # include header file on C file
 MDL_Car_Param_h = '#include "MDL_Car_Param.h"\n\n'
 MDL_VC_Param_h  = '#include "MDL_VC_Param.h"\n\n'
+Rte_Type        = '#include "Rte_Type.h"\n\n'
 
 # default array for declaration
 datatype_declaration = [uint8, float32, boolean]

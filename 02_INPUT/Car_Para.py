@@ -1,5 +1,25 @@
 from Util import *
 
+
+def default_str_declaration_func(appendto, structure_name, type):
+    # default_xxx declaration
+    appendto.append(
+        extern + ' ' +
+        const + ' ' +
+        datatype_declaration[type] + ' ' +
+        default_ +
+        str(structure_name[3:]) + ';\n'
+    )
+
+def default_map_declaration_func(appendto, save_variable, maru_count, type):
+    appendto.append(
+        extern + ' ' +
+        const + ' ' +
+        datatype_declaration[type] + ' ' +
+        str(save_variable) + '[' +
+        str(maru_count) + '];\n'
+    )
+
 def create_car_type_code(df, dic, maru_count):
     h = Car_Para_FileName_H[0]
     c = Car_Para_FileName_C[0]
@@ -159,14 +179,6 @@ def create_contents(df, dic):
                                 datatype_declaration[1] + ' ' +
                                 str(structure_name) + ';\n'
                             )
-                            # default_xxx declaration
-                            default_str_declaration.append(
-                                extern + ' ' +
-                                const + ' ' +
-                                datatype_declaration[1] + ' ' +
-                                default_ +
-                                str(structure_name[3:]) + ';\n'
-                            )
                             structure_definition.append(
                                 const + ' ' +
                                 datatype_declaration[1] + ' ' +
@@ -179,14 +191,6 @@ def create_contents(df, dic):
                                 const + ' ' +
                                 datatype_declaration[0] + ' ' +
                                 str(structure_name) + ';\n'
-                            )
-                            # default_xxx declaration
-                            default_str_declaration.append(
-                                extern + ' ' +
-                                const + ' ' +
-                                datatype_declaration[0] + ' ' +
-                                default_ +
-                                str(structure_name[3:]) + ';\n'
                             )
                             structure_definition.append(
                                 const + ' ' +
@@ -201,14 +205,6 @@ def create_contents(df, dic):
                             const + ' ' +
                             datatype_declaration[0] + ' ' +
                             str(structure_name) + ';\n'
-                        )
-                        # default_xxx declaration
-                        default_str_declaration.append(
-                            extern + ' ' +
-                            const + ' ' +
-                            datatype_declaration[0] + ' ' +
-                            default_ +
-                            str(structure_name[3:]) + ';\n'
                         )
                         structure_definition.append(
                             const + ' ' +
@@ -241,9 +237,10 @@ def create_contents(df, dic):
                                             append_F_pF(map_definition, str(
                                                 k_CAR_SELECT_SPEC[structure_name][0].get(map_value)))
                                             if default_maru_flag:
+                                                default_str_declaration_func(default_str_declaration, structure_name, 1)
                                                 default_maru_definition(
                                                     default_str_definition, structure_name, str(
-                                                        k_CAR_SELECT_SPEC[structure_name][0].get(map_value)))
+                                                        k_CAR_SELECT_SPEC[structure_name][0].get(map_value)), 1)
                                         else:
                                             print(
                                                 "Not in k_CAR_SELECT_SPEC", structure_name, str(map_value))
@@ -251,47 +248,60 @@ def create_contents(df, dic):
                                         map_value = float(map_value) * mm2m
                                         append_F_pF(map_definition, str(map_value))
                                         if default_maru_flag:
+                                            default_str_declaration_func(
+                                                default_str_declaration, structure_name, 1)
                                             default_maru_definition(
-                                                default_str_definition, structure_name, str(map_value))
+                                                default_str_definition, structure_name, str(map_value), 1)
                                     elif structure_name in cmtom:
                                         map_value = map_value * cm2m
                                         append_F_pF(map_definition, str(map_value))
                                         if default_maru_flag:
+                                            default_str_declaration_func(
+                                                default_str_declaration, structure_name, 1)
                                             default_maru_definition(
-                                                default_str_definition, structure_name, str(map_value))
+                                                default_str_definition, structure_name, str(map_value), 1)
                                     elif structure_name in NmmtoNm:
                                         map_value = map_value * Nmm2Nm
                                         append_F_pF(map_definition, str(map_value))
                                         if default_maru_flag:
+                                            default_str_declaration_func(
+                                                default_str_declaration, structure_name, 1)
                                             default_maru_definition(
-                                                default_str_definition, structure_name, str(map_value))
+                                                default_str_definition, structure_name, str(map_value), 1)
                                     elif structure_name in mstos:
                                         map_value = map_value * ms2s
                                         append_F_pF(map_definition,
                                                     str(map_value))
                                         if default_maru_flag:
+                                            default_str_declaration_func(
+                                                default_str_declaration, structure_name, 1)
                                             default_maru_definition(
-                                                default_str_definition, structure_name, str(map_value))                                   
+                                                default_str_definition, structure_name, str(map_value), 1)                                   
                                     else:
                                         append_F_pF(map_definition, str(map_value))
                                         if default_maru_flag:
+                                            default_str_declaration_func(
+                                                default_str_declaration, structure_name, 1)
                                             default_maru_definition(
-                                                default_str_definition, structure_name, str(map_value))
+                                                default_str_definition, structure_name, str(map_value), 1)
                                 # MARKET processing
                                 elif sheet_name == market:
                                     if structure_name in mile_htom_s:
                                         map_value = map_value * mileOffset * kmh2ms
                                         append_F_pF(map_definition, str(map_value))
                                         if default_maru_flag:
+                                            default_str_declaration_func(default_str_declaration, structure_name , 1)
                                             default_maru_definition(
-                                                default_str_definition, structure_name, str(map_value))
+                                                default_str_definition, structure_name, str(map_value), 1)
                                     elif structure_name in k_MARKET_SELECT_SPEC:
                                         if str(map_value) in k_MARKET_SELECT_SPEC[structure_name][0]:
                                             append_F_pF(
                                                 map_definition, k_MARKET_SELECT_SPEC[structure_name][0].get(map_value))
                                             if default_maru_flag:
+                                                default_str_declaration_func(
+                                                    default_str_declaration, structure_name, 1)
                                                 default_maru_definition(
-                                                    default_str_definition, structure_name, k_MARKET_SELECT_SPEC[structure_name][0].get(map_value))
+                                                    default_str_definition, structure_name, k_MARKET_SELECT_SPEC[structure_name][0].get(map_value), 1)
                                         else:
                                             print(
                                                 "Not in k_MARKET_SELECT_SPEC", structure_name, str(map_value))
@@ -299,28 +309,36 @@ def create_contents(df, dic):
                                         map_value = map_value * kmh2ms
                                         append_F_pF(map_definition, str(map_value))
                                         if default_maru_flag:
+                                            default_str_declaration_func(
+                                                default_str_declaration, structure_name, 1)
                                             default_maru_definition(
-                                                default_str_definition, structure_name, str(map_value))
+                                                default_str_definition, structure_name, str(map_value), 1)
                                 elif sheet_name in datatype_boolean:
                                     map_definition.append(
                                         (str(OFF) + ', ') if str(map_value) == 'OFF' else (str(ON) + ', '))
                                     if default_maru_flag:
+                                        default_str_declaration_func(
+                                            default_str_declaration, structure_name, 2)
                                         default_maru_def_ub(
-                                            default_str_definition, structure_name, (str(OFF)) if str(map_value) == 'OFF' else (str(ON)))
+                                            default_str_definition, structure_name, (str(OFF)) if str(map_value) == 'OFF' else (str(ON)), 2)
                                 elif sheet_name in datatype_uint8:
                                     if str(map_value) in i_TYPE_:
                                         map_definition.append(
                                             str(i_TYPE_[map_value][0]) + ', ')
                                         if default_maru_flag:
+                                            default_str_declaration_func(
+                                                default_str_declaration, structure_name, 0)
                                             default_maru_def_ub(
-                                                default_str_definition, structure_name, i_TYPE_[map_value][0])
+                                                default_str_definition, structure_name, i_TYPE_[map_value][0], 0)
                                     else:
                                         print("Sheet : ", sheet_name, "values : ", map_value)
                                 else:
                                     append_F_pF(map_definition, str(map_value))
                                     if default_maru_flag:
+                                        default_str_declaration_func(
+                                            default_str_declaration, structure_name, 1)
                                         default_maru_definition(
-                                            default_str_definition, structure_name, str(map_value))
+                                            default_str_definition, structure_name, str(map_value), 1)
                             ten_only = ten_only + 1
                             default_maru_flag = 0
                     # after end of map[][]
@@ -350,13 +368,15 @@ def create_contents(df, dic):
                     dec_list.append(str(dec_count))
                 dec_count = dec_count + 1
             if sheet_name not in exception_sheet:
-                map_declaration.append(
-                    extern + ' ' +
-                    const + ' ' +
-                    datatype_declaration[1] + ' ' +
-                    str(save_variable) + '[' +
-                    str(maru_count) + '];\n'
-                )
+                if sheet_name in datatype_boolean:
+                    default_map_declaration_func(
+                        map_declaration, save_variable, maru_count, 2)
+                elif sheet_name in datatype_uint8:
+                    default_map_declaration_func(
+                        map_declaration, save_variable, maru_count, 0)
+                else:
+                    default_map_declaration_func(
+                        map_declaration, save_variable, maru_count, 1)
             else:
                 map_declaration.append(
                     extern + ' ' +
@@ -449,8 +469,8 @@ def create_contents(df, dic):
         write_list(c, contents_definition)
         write_list(c, structure_definition)
         write_list(c, default_str_definition)
-        write_list(c, map_id_definition)
         write_list(c, map_definition)
+        write_list(c, map_id_definition)
 
         if svn_flag:
             if sheet_name == car_type:

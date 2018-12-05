@@ -320,11 +320,14 @@ def start_process(df, dic):
                 # for structure type name
                 if df.iat[row,col] not in exception_string:
                     if df.iat[row, col] in STRUCTURE_TYPE_NAME:
-                        value_name.append(
-                            df.iat[row, col] + ' = ' +
-                            STRUCTURE_TYPE_NAME[df.iat[row, col]] +  '\n'
-                        )
                         create_param_dimension(df.iat[row + 2, col], df_dimen)
+                        value_name.append(
+                            #df.iat[row, col] + ' = ' +
+                            STRUCTURE_TYPE_NAME[df.iat[row, col]] + \
+                            '[' + str(row_paramDim) + ']' + \
+                            '[' + str(col_paramDim) + '];' + \
+                            '\n'
+                        )
                     else:
                         print('Not int STRUCTURE_TYPE_NAME', df.iat[row, col])
                 # check for the list value
@@ -417,7 +420,7 @@ def start_process(df, dic):
     for i in MAP_ID_LIST:
         write_list('CarParaMap.c', MAP_ID_LIST[i])
         pass
-    #write_list('CarParaMapValue.c', value_name)
+    write_list('CarParaMapValue.c', value_name)
     #write_list('Map_ID_Dim.c', paraDim)
 
 

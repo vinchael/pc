@@ -1,6 +1,7 @@
 from Common_Car import *
 from Common_VC import *
 from StringManipulation import *
+from CaraParaIndexes import *
 import argparse
 import os
 import pandas as pd
@@ -83,20 +84,20 @@ def append_F_pF(appendto, map_value):
     else:
         return appendto.append(str(map_value) + '.F, ')
 
-def default_maru_definition(appendto, structure_name, computed_value):
+def default_maru_definition(appendto, structure_name, computed_value, type):
     appendto.append(
         const + ' ' +
-        datatype_declaration[1] + ' ' +
+        datatype_declaration[type] + ' ' +
         default_ +
         str(structure_name[3:]) + ' = ' +
         str(computed_value) +
         ('F;\n' if '.' in str(computed_value) else '.F;\n')
     )
 
-def default_maru_def_ub(appendto, structure_name, computed_value):
+def default_maru_def_ub(appendto, structure_name, computed_value, type):
     appendto.append(
         const + ' ' +
-        datatype_declaration[0] + ' ' +
+        datatype_declaration[type] + ' ' +
         default_ +
         str(structure_name[3:]) + ' = ' +
         str(computed_value) +
