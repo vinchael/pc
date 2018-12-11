@@ -6,6 +6,7 @@ extern     = 'extern'
 const      = 'const'
 uint8      = 'uint8'
 float32    = 'float32'
+space      = ' '
 tab        = '    '
 NULL       = 'NULL'
 default_   = 'default'
@@ -45,8 +46,14 @@ exception_sheet = {'CAR_TYPE', 'MARKET', 'SUB'}
 exception_string = {'-', '', NULL, 'xxx'}
 
 # Sheet declaration
-contents = 'Contents'  # 内容   Contents
-structure = 'Structure'    # 構造体 Structure
+is_eng_ON = 1
+
+if is_eng_ON:
+    contents  = 'Contents'  
+    structure = 'Structure'
+else:
+    contents  = '内容'
+    structure = '構造体'
 
 has_contents = {"CAR_TYPE"}
 

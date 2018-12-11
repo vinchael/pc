@@ -1,13 +1,13 @@
 #ifndef CARPARA_INP_02
 #define CARPARA_INP_02
 
+#include "Rte_Type.h"
 #include "CarPara_INP_02.h"
 #include "CarPara_GLOBAL.h"
 #include "MDL_Car_Param.h"
-#include "AllFeatureLocalParams.h"
+#include "MDL_VC_Param.h"
 #include "RC_Const_Common_Tuning_Param.h"
 #include "RC_Const_Select_Tuning_Param.h"
-#include "Rte_Type.h"
 
 static boolean get_ALKSpecJudge(void);
 static boolean is_equal(boolean *buf, uint8 size);
@@ -66,33 +66,33 @@ static void set_LookupTable_1D_Logic(uint16  *ReqBrkG_irx_out,
 void CarPara_INP_02()
 {
     static boolean unit_delay       = 0;
-    static uint8   car_code_index   = 0;
-    static boolean car_code_unmatch = 1;
+    static uint8   CarCode_index   = 0;
+    static boolean CarCode_unmatch = 1;
     uint8 car_code_value[10]        = {0};
 
     // k_ CARPARA HEV
     uint8 car_para_HEV = 0;
-    static uint8 car_para_HEV_index = 0;
+    static uint8 CarPara_HEV_index = 0;
 
     // k_ CARPARA RAB
-    uint8 car_para_RAB = 0;
-    static uint8 car_para_RAB_index = 0;
+    boolean car_para_RAB = 0;
+    static uint8 f_CarPara_RAB_index = 0;
 
     // CarPara_SpecTCM
-    static uint8 car_para_TCM_index = 0;
+    static uint8 CarPara_TCM_index = 0;
 
     // CarPara_MARKET
-    static uint8 car_para_MARKET_index = 0;
-    float32 BrkLamp_index     = 0.F;
-    float32 TgtAMap_index     = 0.F;
-    float32 PCMarket_index    = 0.F;
-    float32 FMWMaxGType_index = 0.F;
+    static uint8 CarPara_Market_index = 0;
+    uint8 BrkLamp_index     = 0;
+    uint8 TgtAMap_index     = 0;
+    uint8 PCMarket_index    = 0;
+    uint8 FMWMaxGType_index = 0;
 
     // CarPara_PU_ENG
-    static uint8 car_para_PU_ENG_index = 0;
+    static uint8 CarPara_PU_index = 0;
 
     // CarPara_SpecISS
-    static uint8 car_para_ISS_index = 0;
+    static uint8 CarPara_ISS_index = 0;
 
     // MtrCorrectTbl
     uint8 mtr_correcttble = 0;
@@ -175,17 +175,17 @@ void CarPara_INP_02()
     {
         boolean CarPara_CarCodeValue[10] = {0};
         // CarCodeInitJudg
-        row = sizeof(CarCode) / sizeof(CarCode[0]);
+        row = sizeof(CarCode_gbl) / sizeof(CarCode_gbl[0]);
         for (uint8 i = 0; i < row; i++)
         {   
-            CarPara_CarCodeValue[i] = CarCode[i] == gk_uc_Car_Type_default[i];
+            CarPara_CarCodeValue[i] = CarCode_gbl[i] == gk_uc_Car_Type_default[i];
         }
         if (is_equal(CarPara_CarCodeValue, row))
         {
-            car_code_unmatch  = ON;
-            f_CarPara_Init    = ON;
-            f_CarPara_Decided = OFF;
-            f_CarCodeUnmatch  = car_code_unmatch;
+            CarCode_unmatch   = ON;
+            f_CarPara_Init_gbl    = ON;
+            f_CarPara_Decided_gbl = OFF;
+            f_CarCodeUnmatch_gbl  = CarCode_unmatch;
 
             // GetCarType
             CarPara_Body           = (uint8)ZERO;
@@ -204,7 +204,7 @@ void CarPara_INP_02()
             CarPara_YearMode       = (uint8)ZERO;
             f_CarPara_SpecATMEquip = (boolean)ZERO != 0.F;
             CarPara_EBrkBooster    = (uint8)ZERO;
-            f_CarPara_EquipEPB     = (boolean)ZERO;
+            f_CarPara_EquipEPB     = (boolean)ZERO != 0.F;
             CarPara_AVH            = (uint8)ZERO;
             CarPara_OEM            = (uint8)ZERO;
             CarPara_EquipMSA       = (uint8)ZERO;
@@ -229,17 +229,17 @@ void CarPara_INP_02()
             CarPara_LightCtrl      = (uint8)ZERO;
             CarPara_HandlePos      = (uint8)ZERO;
 
-            TCMType = (uint8)default_tcm_type;
+            TCMType_gbl = (uint8)default_tcm_type;
 
             // BrkLamp
-            set_BrkLamp(0);
+            set_BrkLamp((uint8)0);
 
             // TgtAMap
-            set_TgtATrackingSp(0);
-            set_TgtAConstSp(0);
-            set_TgtASetSpAcc(0);
-            set_TgtASetSpAccConst(0);
-            set_TgtASetSpMsa(0);
+            set_TgtATrackingSp((uint8)0);
+            set_TgtAConstSp((uint8)0);
+            set_TgtASetSpAcc((uint8)0);
+            set_TgtASetSpAccConst((uint8)0);
+            set_TgtASetSpMsa((uint8)0);
 
             // AccSp
             CarPara_ACCSetSpInitMaxKph    = default_acc_set_spd_max;
@@ -273,7 +273,7 @@ void CarPara_INP_02()
             CarPara_FMWSpMax              = default_fmw_spd_max;
 
             // PCMarket
-            set_PCMarket(0);
+            set_PCMarket((uint8)0);
 
             // LdpSp
             CarPara_LDP_VOffMax           = default_ldp_v_max_off;
@@ -282,15 +282,15 @@ void CarPara_INP_02()
             CarPara_LDP_VOnMin            = default_ldp_v_min_on;
 
             // AlkLim
-            f_CarPara_ALK_LimitWarn       = default_ALK_limit_kh;
+            f_CarPara_ALK_LimitWarn       = (boolean)default_ALK_limit_kh;
 
             // OneSideLane
-            CarPara_OnesideLaneMode       = default_oneside_lane_mode;
+            CarPara_OnesideLaneMode       = (boolean)default_oneside_lane_mode;
 
             // FMWMaxGType
-            set_FMWMaxGCont(0);
-            set_FMWMaxGVown(0);
-            set_FMWMaxGR(0);
+            set_FMWMaxGCont((uint8)0);
+            set_FMWMaxGVown((uint8)0);
+            set_FMWMaxGR((uint8)0);
 
             // MarketInfo
             CarPara_MarketInfo            = (uint8)default_MARKETInfo;
@@ -430,171 +430,171 @@ void CarPara_INP_02()
             {
                 for (uint8 j = 0; j < col; j++)
                 {
-                    CarPara_CarCodeValue[j] = CarCode[j] == k_CAR_CAR_CODE_INDEX[i][j];
+                    CarPara_CarCodeValue[j] = CarCode_gbl[j] == k_CAR_CAR_CODE_INDEX[i][j];
                 }
                 // if found stop the loop 
                 if (is_equal(CarPara_CarCodeValue, col))
                 {
-                    car_code_index = i;
-                    car_code_unmatch = OFF;
-                    f_CarCodeUnmatch = car_code_unmatch;
+                    CarCode_index    = i;
+                    CarCode_unmatch  = OFF;
+                    f_CarCodeUnmatch_gbl = CarCode_unmatch;
                     break;
                 }
             }
-
             // Set the array value to car_code_value from k_CAR_CAR_CODE_INDEX
             row = sizeof(k_CAR_CAR_CODE_INDEX[0]) / sizeof(k_CAR_CAR_CODE_INDEX[0][0]);
-            for(sint32 i = 0; i < row; i++){
-                car_code_value[i] = k_CAR_CAR_CODE_INDEX[car_code_index][i];
+            for (uint8 i = 0; i < row; i++)
+            {
+                car_code_value[i] = k_CAR_CAR_CODE_INDEX[CarCode_index][i];
             }
 
-            f_CarPara_Init    = OFF;
-            f_CarPara_Decided = ON;
+            f_CarPara_Init_gbl    = OFF;
+            f_CarPara_Decided_gbl = ON;
 
             // GetCarType
-            CarPara_CarSystem      =  ((uint8)(car_code_value[ba_CarSystem      [0]] & ba_CarSystem     [1])) >> ba_CarSystem     [2]     ;
-            CarPara_YearMode       =  ((uint8)(car_code_value[ba_YearMode       [0]] & ba_YearMode      [1])) >> ba_YearMode      [2]     ;
-            CarPara_Market         =  ((uint8)(car_code_value[ba_Market         [0]] & ba_Market        [1])) >> ba_Market        [2]     ;
-            CarPara_MarketDetail   =  ((uint8)(car_code_value[ba_MarketDetail   [0]] & ba_MarketDetail  [1])) >> ba_MarketDetail  [2]     ;
-            CarPara_Grade          =  ((uint8)(car_code_value[ba_Grade          [0]] & ba_Grade         [1])) >> ba_Grade         [2]     ;
-            f_CarPara_SpecATMEquip = (((uint8)(car_code_value[ba_AtmPressSensor [0]] & ba_AtmPressSensor[1])) >> ba_AtmPressSensor[2])!= 0;
-            CarPara_PU             =  ((uint8)(car_code_value[ba_PU             [0]] & ba_PU            [1])) >> ba_PU            [2]     ;
-            CarPara_Body           =  ((uint8)(car_code_value[ba_Body           [0]] & ba_Body          [1])) >> ba_Body          [2]     ;
-            CarPara_BrkSize        =  ((uint8)(car_code_value[ba_Brake          [0]] & ba_Brake         [1])) >> ba_Brake         [2]     ;
-            CarPara_EBrkBooster    =  ((uint8)(car_code_value[ba_EBrkBooster    [0]] & ba_EBrkBooster   [1])) >> ba_EBrkBooster   [2]     ;
-            CarPara_TireSize       =  ((uint8)(car_code_value[ba_Tire           [0]] & ba_Tire          [1])) >> ba_Tire          [2]     ;
-            CarPara_ISS            =  ((uint8)(car_code_value[ba_ISS            [0]] & ba_ISS           [1])) >> ba_ISS           [2]     ;
+            CarPara_CarSystem      =  ((uint8)(car_code_value[ba_CarSystem        [0]] & ba_CarSystem     [1])) >> ba_CarSystem     [2]     ;
+            CarPara_YearMode       =  ((uint8)(car_code_value[ba_YearMode         [0]] & ba_YearMode      [1])) >> ba_YearMode      [2]     ;
+            CarPara_Market         =  ((uint8)(car_code_value[ba_Market           [0]] & ba_Market        [1])) >> ba_Market        [2]     ;
+            CarPara_MarketDetail   =  ((uint8)(car_code_value[ba_MarketDetail     [0]] & ba_MarketDetail  [1])) >> ba_MarketDetail  [2]     ;
+            CarPara_Grade          =  ((uint8)(car_code_value[ba_Grade            [0]] & ba_Grade         [1])) >> ba_Grade         [2]     ;
+            f_CarPara_SpecATMEquip = (((boolean)(car_code_value[ba_AtmPressSensor [0]] & ba_AtmPressSensor[1])) >> ba_AtmPressSensor[2])!= 0;
+            CarPara_PU             =  ((uint8)(car_code_value[ba_PU               [0]] & ba_PU            [1])) >> ba_PU            [2]     ;
+            CarPara_Body           =  ((uint8)(car_code_value[ba_Body             [0]] & ba_Body          [1])) >> ba_Body          [2]     ;
+            CarPara_BrkSize        =  ((uint8)(car_code_value[ba_Brake            [0]] & ba_Brake         [1])) >> ba_Brake         [2]     ;
+            CarPara_EBrkBooster    =  ((uint8)(car_code_value[ba_EBrkBooster      [0]] & ba_EBrkBooster   [1])) >> ba_EBrkBooster   [2]     ;
+            CarPara_TireSize       =  ((uint8)(car_code_value[ba_Tire             [0]] & ba_Tire          [1])) >> ba_Tire          [2]     ;
+            CarPara_ISS            =  ((uint8)(car_code_value[ba_ISS              [0]] & ba_ISS           [1])) >> ba_ISS           [2]     ;
             // HEV
-            car_para_HEV           =  ((uint8)(car_code_value[ba_HEV            [0]] & ba_HEV           [1])) >> ba_HEV           [2]     ;
+            car_para_HEV           =  ((uint8)(car_code_value[ba_HEV              [0]] & ba_HEV           [1])) >> ba_HEV           [2]     ;
             row = sizeof(k_HEV_CAR_CODE_INDEX) / sizeof(k_HEV_CAR_CODE_INDEX[0]);
             for (uint8 i = 0; i < row; i++)
             {
                 if (car_para_HEV == k_HEV_CAR_CODE_INDEX[i])
                 {
-                    car_para_HEV_index = i;
+                    CarPara_HEV_index = i;
                     break;
                 }
             }
-            CarPara_HEV = (uint8)k_HEV_CAR_CODE_INDEX[car_para_HEV_index];
+            CarPara_HEV = (uint8)k_HEV_CAR_CODE_INDEX[CarPara_HEV_index];
             // End HEV
-            f_CarPara_EquipEPB     = (((uint8)(car_code_value[ba_EPB            [0]] & ba_EPB           [1])) >> ba_EPB           [2])!= 0;
-            CarPara_AVH            =  ((uint8)(car_code_value[ba_AVH            [0]] & ba_AVH           [1])) >> ba_AVH           [2]     ;
-            CarPara_TCM            =  ((uint8)(car_code_value[ba_TCM            [0]] & ba_TCM           [1])) >> ba_TCM           [2]     ;
-            CarPara_AWD            =  ((uint8)(car_code_value[ba_AWD            [0]] & ba_AWD           [1])) >> ba_AWD           [2]     ;
+            f_CarPara_EquipEPB     = (((boolean)(car_code_value[ba_EPB            [0]] & ba_EPB           [1])) >> ba_EPB           [2])!= 0;
+            CarPara_AVH            =  ((uint8)(car_code_value[ba_AVH              [0]] & ba_AVH           [1])) >> ba_AVH           [2]     ;
+            CarPara_TCM            =  ((uint8)(car_code_value[ba_TCM              [0]] & ba_TCM           [1])) >> ba_TCM           [2]     ;
+            CarPara_AWD            =  ((uint8)(car_code_value[ba_AWD              [0]] & ba_AWD           [1])) >> ba_AWD           [2]     ;
             // RAB
-            car_para_RAB           =  ((uint8)(car_code_value[ba_RAB            [0]] & ba_RAB           [1])) >> ba_RAB           [2]     ;
+            car_para_RAB           =  (((boolean)(car_code_value[ba_RAB           [0]] & ba_RAB           [1])) >> ba_RAB           [2])!= 0;
             row = sizeof(k_RAB_SELECT_SPEC) / sizeof(k_RAB_SELECT_SPEC[0]);
             for (uint8 i = 0; i < row; i++)
             {
                 if (car_para_RAB == k_RAB_SELECT_SPEC[i])
                 {
-                    car_para_RAB_index = i;
+                    f_CarPara_RAB_index = i;
                     break;
                 }
             }
-            f_CarPara_RAB = (boolean)k_RAB_SELECT_SPEC[car_para_RAB_index];
+            f_CarPara_RAB = (boolean)k_RAB_SELECT_SPEC[f_CarPara_RAB_index];
             
 
-            CarPara_OEM            =  ((uint8)(car_code_value[ba_OEM            [0]] & ba_OEM           [1])) >> ba_OEM           [2]     ;
-            CarPara_EquipMSA       =  ((uint8)(car_code_value[ba_MSA            [0]] & ba_MSA           [1])) >> ba_MSA           [2]     ;
-            CarPara_TSR            =  ((uint8)(car_code_value[ba_TSR            [0]] & ba_TSR           [1])) >> ba_TSR           [2]     ;
-            CarPara_RadarF         =  ((uint8)(car_code_value[ba_RadarF         [0]] & ba_RadarF        [1])) >> ba_RadarF        [2]     ;
-            CarPara_RadarR         =  ((uint8)(car_code_value[ba_RadarR         [0]] & ba_RadarR        [1])) >> ba_RadarR        [2]     ;
-            f_CarPara_EquipELK     = (((uint8)(car_code_value[ba_ELK            [0]] & ba_ELK           [1])) >> ba_ELK           [2])!= 0;
-            CarPara_StrVibration   =  ((uint8)(car_code_value[ba_StrVibration   [0]] & ba_StrVibration  [1])) >> ba_StrVibration  [2]     ;
-            CarPara_RoadEdge       =  ((uint8)(car_code_value[ba_RoadEdge       [0]] & ba_RoadEdge      [1])) >> ba_RoadEdge      [2]     ;
-            CarPara_MapLocator     =  ((uint8)(car_code_value[ba_MapLocator     [0]] & ba_MapLocator    [1])) >> ba_MapLocator    [2]     ;
-            CarPara_SonarF         =  ((uint8)(car_code_value[ba_SonarF         [0]] & ba_SonarF        [1])) >> ba_SonarF        [2]     ;
-            CarPara_DMS            =  ((uint8)(car_code_value[ba_DMS            [0]] & ba_DMS           [1])) >> ba_DMS           [2]     ;
-            CarPara_ALC            =  ((uint8)(car_code_value[ba_ALC            [0]] & ba_ALC           [1])) >> ba_ALC           [2]     ;
-            CarPara_NotHoldingALK  =  ((uint8)(car_code_value[ba_NotHoldingALK  [0]] & ba_NotHoldingALK [1])) >> ba_NotHoldingALK [2]     ;
-            CarPara_AutoDepart     =  ((uint8)(car_code_value[ba_AutoDepart     [0]] & ba_AutoDepart    [1])) >> ba_AutoDepart    [2]     ;
-            CarPara_iACC           =  ((uint8)(car_code_value[ba_iACC           [0]] & ba_iACC          [1])) >> ba_iACC          [2]     ;
-            CarPara_SlowBfCrv      =  ((uint8)(car_code_value[ba_SlowBfCrv      [0]] & ba_SlowBfCrv     [1])) >> ba_SlowBfCrv     [2]     ;
-            CarPara_LDPType        = (((uint8)(car_code_value[ba_ALKB           [0]] & ba_ALKB          [1])) >> ba_ALKB          [2])!= 0;
-            CarPara_LKSType        = (((uint8)(car_code_value[ba_ALKC           [0]] & ba_ALKC          [1])) >> ba_ALKC          [2])!= 0;
-            CarPara_StrTouchSensor =  ((uint8)(car_code_value[ba_StrTouchSensor [0]] & ba_StrTouchSensor[1])) >> ba_StrTouchSensor[2]     ;
-            CarPara_MonoCam        =  ((uint8)(car_code_value[ba_MonoCam        [0]] & ba_MonoCam       [1])) >> ba_MonoCam       [2]     ;
-            CarPara_LightCtrl      =  ((uint8)(car_code_value[ba_LightCtrl      [0]] & ba_LightCtrl     [1])) >> ba_LightCtrl     [2]     ;
-            CarPara_HandlePos      =  ((uint8)(car_code_value[ba_HandlePos      [0]] & ba_HandlePos     [1])) >> ba_HandlePos     [2]     ;
+            CarPara_OEM            =  ((uint8)(car_code_value[ba_OEM              [0]] & ba_OEM           [1])) >> ba_OEM           [2]     ;
+            CarPara_EquipMSA       =  ((uint8)(car_code_value[ba_MSA              [0]] & ba_MSA           [1])) >> ba_MSA           [2]     ;
+            CarPara_TSR            =  ((uint8)(car_code_value[ba_TSR              [0]] & ba_TSR           [1])) >> ba_TSR           [2]     ;
+            CarPara_RadarF         =  ((uint8)(car_code_value[ba_RadarF           [0]] & ba_RadarF        [1])) >> ba_RadarF        [2]     ;
+            CarPara_RadarR         =  ((uint8)(car_code_value[ba_RadarR           [0]] & ba_RadarR        [1])) >> ba_RadarR        [2]     ;
+            f_CarPara_EquipELK     = (((boolean)(car_code_value[ba_ELK            [0]] & ba_ELK           [1])) >> ba_ELK           [2])!= 0;
+            CarPara_StrVibration   =  ((uint8)(car_code_value[ba_StrVibration     [0]] & ba_StrVibration  [1])) >> ba_StrVibration  [2]     ;
+            CarPara_RoadEdge       =  ((uint8)(car_code_value[ba_RoadEdge         [0]] & ba_RoadEdge      [1])) >> ba_RoadEdge      [2]     ;
+            CarPara_MapLocator     =  ((uint8)(car_code_value[ba_MapLocator       [0]] & ba_MapLocator    [1])) >> ba_MapLocator    [2]     ;
+            CarPara_SonarF         =  ((uint8)(car_code_value[ba_SonarF           [0]] & ba_SonarF        [1])) >> ba_SonarF        [2]     ;
+            CarPara_DMS            =  ((uint8)(car_code_value[ba_DMS              [0]] & ba_DMS           [1])) >> ba_DMS           [2]     ;
+            CarPara_ALC            =  ((uint8)(car_code_value[ba_ALC              [0]] & ba_ALC           [1])) >> ba_ALC           [2]     ;
+            CarPara_NotHoldingALK  =  ((uint8)(car_code_value[ba_NotHoldingALK    [0]] & ba_NotHoldingALK [1])) >> ba_NotHoldingALK [2]     ;
+            CarPara_AutoDepart     =  ((uint8)(car_code_value[ba_AutoDepart       [0]] & ba_AutoDepart    [1])) >> ba_AutoDepart    [2]     ;
+            CarPara_iACC           =  ((uint8)(car_code_value[ba_iACC             [0]] & ba_iACC          [1])) >> ba_iACC          [2]     ;
+            CarPara_SlowBfCrv      =  ((uint8)(car_code_value[ba_SlowBfCrv        [0]] & ba_SlowBfCrv     [1])) >> ba_SlowBfCrv     [2]     ;
+            CarPara_LDPType        = (((boolean)(car_code_value[ba_ALKB           [0]] & ba_ALKB          [1])) >> ba_ALKB          [2])!= 0;
+            CarPara_LKSType        = (((boolean)(car_code_value[ba_ALKC           [0]] & ba_ALKC          [1])) >> ba_ALKC          [2])!= 0;
+            CarPara_StrTouchSensor =  ((uint8)(car_code_value[ba_StrTouchSensor   [0]] & ba_StrTouchSensor[1])) >> ba_StrTouchSensor[2]     ;
+            CarPara_MonoCam        =  ((uint8)(car_code_value[ba_MonoCam          [0]] & ba_MonoCam       [1])) >> ba_MonoCam       [2]     ;
+            CarPara_LightCtrl      =  ((uint8)(car_code_value[ba_LightCtrl        [0]] & ba_LightCtrl     [1])) >> ba_LightCtrl     [2]     ;
+            CarPara_HandlePos      =  ((uint8)(car_code_value[ba_HandlePos        [0]] & ba_HandlePos     [1])) >> ba_HandlePos     [2]     ;
 
             // CarPara_CarCode
             // CarVariant
-            CarPara_VariantPTType       = (uint8)k_CAR_SELECT_SPEC[idx_variant_pt]         [car_code_index];
-            CarPara_VariantTMType       = (uint8)k_CAR_SELECT_SPEC[idx_variant_tm]         [car_code_index];
-            CarPara_VariantForLKS       = (uint8)k_CAR_SELECT_SPEC[idx_variant_for_lks]    [car_code_index];
-            CarPara_VariantForLDP       = (uint8)k_CAR_SELECT_SPEC[idx_variant_for_ldp]    [car_code_index];
-            CarPara_VariantPadTypeF     = (uint8)k_CAR_SELECT_SPEC[idx_VariantPadTypeF]    [car_code_index];
-            CarPara_VariantPadTypeR     = (uint8)k_CAR_SELECT_SPEC[idx_VariantPadTypeR]    [car_code_index];
+            CarPara_VariantPTType       = (uint8)k_CAR_SELECT_SPEC[idx_variant_pt]            [CarCode_index];
+            CarPara_VariantTMType       = (uint8)k_CAR_SELECT_SPEC[idx_variant_tm]            [CarCode_index];
+            CarPara_VariantForLKS       = (uint8)k_CAR_SELECT_SPEC[idx_variant_for_lks]       [CarCode_index];
+            CarPara_VariantForLDP       = (uint8)k_CAR_SELECT_SPEC[idx_variant_for_ldp]       [CarCode_index];
+            CarPara_VariantPadTypeF     = (uint8)k_CAR_SELECT_SPEC[idx_VariantPadTypeF]       [CarCode_index];
+            CarPara_VariantPadTypeR     = (uint8)k_CAR_SELECT_SPEC[idx_VariantPadTypeR]       [CarCode_index];
 
             // MovingTire
-            CarPara_MovingTire_R        = (float32)k_CAR_SELECT_SPEC[idx_moving_tire_r]    [car_code_index];
+            CarPara_MovingTire_R        = (float32)k_CAR_SELECT_SPEC[idx_moving_tire_r]       [CarCode_index];
 
             // Vehicle_Weight
-            CarPara_Vehicle_Weight      = (float32)k_CAR_SELECT_SPEC[idx_vehicle_weight]   [car_code_index];
+            CarPara_Vehicle_Weight      = (float32)k_CAR_SELECT_SPEC[idx_vehicle_weight]      [CarCode_index];
 
             // RS_degree_C 
-            CarPara_RS_0degree_C        = (float32)k_CAR_SELECT_SPEC[idx_rs_0degree_c]     [car_code_index];
-            CarPara_RS_1degree_C        = (float32)k_CAR_SELECT_SPEC[idx_rs_1degree_c]     [car_code_index];
-            CarPara_RS_2degree_C        = (float32)k_CAR_SELECT_SPEC[idx_rs_2degree_c]     [car_code_index];
+            CarPara_RS_0degree_C        = (float32)k_CAR_SELECT_SPEC[idx_rs_0degree_c]        [CarCode_index];
+            CarPara_RS_1degree_C        = (float32)k_CAR_SELECT_SPEC[idx_rs_1degree_c]        [CarCode_index];
+            CarPara_RS_2degree_C        = (float32)k_CAR_SELECT_SPEC[idx_rs_2degree_c]        [CarCode_index];
 
             // AownHosei_fact
-            CarPara_AownCorrectFact     = (float32)k_CAR_SELECT_SPEC[idx_aown_CorrectRate] [car_code_index];
+            CarPara_AownCorrectFact     = (float32)k_CAR_SELECT_SPEC[idx_aown_CorrectRate]    [CarCode_index];
 
             // VSO_Error
-            CarPara_VSOError            = (float32)k_CAR_SELECT_SPEC[idx_vso_error]        [car_code_index];
+            CarPara_VSOError            = (float32)k_CAR_SELECT_SPEC[idx_vso_error]           [CarCode_index];
 
             // Veh
-            CarPara_Vehicle_Width       = (float32)k_CAR_SELECT_SPEC[idx_vehicle_width]    [car_code_index];
+            CarPara_Vehicle_Width       = (float32)k_CAR_SELECT_SPEC[idx_vehicle_width]       [CarCode_index];
 
             // EngRev
-            CarPara_EngRevLimMax        = (float32)k_CAR_SELECT_SPEC[idx_eng_rev_min_lim]  [car_code_index];
+            CarPara_EngRevLimMax        = (float32)k_CAR_SELECT_SPEC[idx_eng_rev_min_lim]     [CarCode_index];
 
             // GearRatio
-            CarPara_GearRatioMax        = (float32)k_CAR_SELECT_SPEC[idx_gear_ratio_max]   [car_code_index];
-            CarPara_GearRatioMin        = (float32)k_CAR_SELECT_SPEC[idx_gear_ratio_min]   [car_code_index];
-            CarPara_FinalGear           = (float32)k_CAR_SELECT_SPEC[idx_final_gear]       [car_code_index];
+            CarPara_GearRatioMax        = (float32)k_CAR_SELECT_SPEC[idx_gear_ratio_max]      [CarCode_index];
+            CarPara_GearRatioMin        = (float32)k_CAR_SELECT_SPEC[idx_gear_ratio_min]      [CarCode_index];
+            CarPara_FinalGear           = (float32)k_CAR_SELECT_SPEC[idx_final_gear]          [CarCode_index];
 
             // CarSpec
-            CarPara_SpecLKSDefault      = (boolean)k_CAR_SELECT_SPEC[idx_lks_default]      [car_code_index];
-            CarPara_SpecALKSwMemory     = (uint8)k_CAR_SELECT_SPEC[idx_SpecALKSwMemory]    [car_code_index];
-            CarPara_VDCSwForPCSpec      = (uint8)k_CAR_SELECT_SPEC[idx_vdc_offmode]        [car_code_index];
-            CarPara_CCType              = (uint8)k_CAR_SELECT_SPEC[idx_spec_cc_type]       [car_code_index];
-            CarPara_CCSwType            = (uint8)k_CAR_SELECT_SPEC[idx_spec_cc_sw_type]    [car_code_index];
-            f_CarPara_SpecManualMode    = (boolean)k_CAR_SELECT_SPEC[idx_spec_manual_mode] [car_code_index];
-            CarPara_DistRWheel2Vdc      = (float32)k_CAR_SELECT_SPEC[idx_distance_rw_2_vdc][car_code_index];
+            CarPara_SpecLKSDefault      = (boolean)k_CAR_SELECT_SPEC[idx_lks_default]         [CarCode_index];
+            CarPara_SpecALKSwMemory     = (uint8)k_CAR_SELECT_SPEC[idx_SpecALKSwMemory]       [CarCode_index];
+            CarPara_VDCSwForPCSpec      = (uint8)k_CAR_SELECT_SPEC[idx_vdc_offmode]           [CarCode_index];
+            CarPara_CCType              = (uint8)k_CAR_SELECT_SPEC[idx_spec_cc_type]          [CarCode_index];
+            CarPara_CCSwType            = (uint8)k_CAR_SELECT_SPEC[idx_spec_cc_sw_type]       [CarCode_index];
+            f_CarPara_SpecManualMode    = (boolean)k_CAR_SELECT_SPEC[idx_spec_manual_mode]    [CarCode_index];
+            CarPara_DistRWheel2Vdc      = (float32)k_CAR_SELECT_SPEC[idx_distance_rw_2_vdc]   [CarCode_index];
 
             // DidSelect
-            CarPara_DidSelect           = (uint8)k_CAR_SELECT_SPEC[idx_did_select_tbl]     [car_code_index];
+            CarPara_DidSelect           = (uint8)k_CAR_SELECT_SPEC[idx_did_select_tbl]        [CarCode_index];
 
             // MtrCorrectTbl
-            mtr_correcttble             = k_CAR_SELECT_SPEC[idx_add_mtr_correct]           [car_code_index];
+            mtr_correcttble             = (uint8)k_CAR_SELECT_SPEC[idx_add_mtr_correct]       [CarCode_index];
             row = sizeof(k_MtrCorrectTbl[0]) / sizeof(k_MtrCorrectTbl[0][0]);
             for (uint8 i = 0; i < row; i++)
             {
-                CarPara_MeterCorrectionTbl[i] = k_MtrCorrectTbl[mtr_correcttble][i];
+                CarPara_MeterCorrectionTbl[i] = (float32)k_MtrCorrectTbl[mtr_correcttble][i];
             }
-
+            
             // SwLongPress
-            CarPara_SwLongPressThrTime  = k_CAR_SELECT_SPEC[idx_nagaoshi_thr]              [car_code_index];
+            CarPara_SwLongPressThrTime  = (float32)k_CAR_SELECT_SPEC[idx_nagaoshi_thr]        [CarCode_index];
 
             // Req_brk_press
-            CarPara_ReqBrakePressBase_F = k_CAR_SELECT_SPEC[idx_ReqBrkPrsBaseF]            [car_code_index];
-            CarPara_ReqBrakePressBase_R = k_CAR_SELECT_SPEC[idx_ReqBrkPrsBaseR]            [car_code_index];
-            CarPara_ReqBrakePressBase_C = k_CAR_SELECT_SPEC[idx_ReqBrkPrsBaseCaliper]      [car_code_index];
+            CarPara_ReqBrakePressBase_F = (float32)k_CAR_SELECT_SPEC[idx_ReqBrkPrsBaseF]      [CarCode_index];
+            CarPara_ReqBrakePressBase_R = (float32)k_CAR_SELECT_SPEC[idx_ReqBrkPrsBaseR]      [CarCode_index];
+            CarPara_ReqBrakePressBase_C = (float32)k_CAR_SELECT_SPEC[idx_ReqBrkPrsBaseCaliper][CarCode_index];
 
             // Vel_coefficient
-            CarPara_VelCoefficientFront = k_CAR_SELECT_SPEC[idx_VelCoefficientF]           [car_code_index];
-            CarPara_VelCoefficientRear  = k_CAR_SELECT_SPEC[idx_VelCoefficientR]           [car_code_index];
+            CarPara_VelCoefficientFront = (float32)k_CAR_SELECT_SPEC[idx_VelCoefficientF]     [CarCode_index];
+            CarPara_VelCoefficientRear  = (float32)k_CAR_SELECT_SPEC[idx_VelCoefficientR]     [CarCode_index];
 
             // EquipCustom
-            f_CarPara_R79Spec           = (boolean)k_CAR_SELECT_SPEC[idx_SpecR79]          [car_code_index];
+            f_CarPara_R79Spec           = (boolean)k_CAR_SELECT_SPEC[idx_SpecR79]             [CarCode_index];
 
             // EpsCtrlTrqALKLim
-            CarPara_EpsCtrlTrqALKLim    = k_CAR_SELECT_SPEC[idx_EpsCtrlTrqALKLim]          [car_code_index];
+            CarPara_EpsCtrlTrqALKLim    = (float32)k_CAR_SELECT_SPEC[idx_EpsCtrlTrqALKLim]    [CarCode_index];
 
             // CustomACC
-            if (k_SpecAcclCustDefault != i_CUSTOM_ACC_A_NO_EQUIP)
+            if (k_SpecAcclCustDefault != (float32)i_CUSTOM_ACC_A_NO_EQUIP)
             {
                 CarPara_AcclCustType    = ON;
             }
@@ -603,8 +603,8 @@ void CarPara_INP_02()
                 CarPara_AcclCustType    = OFF;
             }
             // CAMtoFtAxle
-            CarPara_CAMtoFtAxle         = k_CAR_SELECT_SPEC[idx_CarPara_CAMtoFtAxle]  [car_code_index];
-            CarPara_CAMtoRrAxle         = k_CAR_SELECT_SPEC[idx_CarPara_CAMtoRrAxle]  [car_code_index];
+            CarPara_CAMtoFtAxle         = (float32)k_CAR_SELECT_SPEC[idx_CarPara_CAMtoFtAxle] [CarCode_index];
+            CarPara_CAMtoRrAxle         = (float32)k_CAR_SELECT_SPEC[idx_CarPara_CAMtoRrAxle] [CarCode_index];
 
             // CarPara_SpecTCM
             row = sizeof(k_TCM_CAR_CODE_INDEX) / sizeof(k_TCM_CAR_CODE_INDEX[0]);
@@ -612,11 +612,11 @@ void CarPara_INP_02()
             {
                 if (CarPara_TCM == k_TCM_CAR_CODE_INDEX[i])
                 {
-                    car_para_TCM_index = i;
+                    CarPara_TCM_index = i;
                     break;
                 }
             }
-            TCMType = (uint8)k_TCM_SELECT_SPEC[car_para_TCM_index];
+            TCMType_gbl = (uint8)k_TCM_SELECT_SPEC[CarPara_TCM_index];
 
             // CarPara_MARKET
             row = sizeof(k_MARKET_CAR_CODE_INDEX) / sizeof(k_MARKET_CAR_CODE_INDEX[0]);
@@ -624,110 +624,110 @@ void CarPara_INP_02()
             {
                 if (CarPara_Market == k_MARKET_CAR_CODE_INDEX[i]) 
                 {
-                    car_para_MARKET_index = i;
+                    CarPara_Market_index = i;
                     break;
                 }
             }
-            BrkLamp_index                 = (boolean)k_MARKET_SELECT_SPEC[idx_BRK_LAMP_type]    [car_para_MARKET_index];
+            BrkLamp_index                 = (uint8)k_MARKET_SELECT_SPEC[idx_BRK_LAMP_type]      [CarPara_Market_index];
             set_BrkLamp(BrkLamp_index);
 
             // TgtAMap
-            TgtAMap_index                 = k_MARKET_SELECT_SPEC[idx_TGT_A_type]                [car_para_MARKET_index];
+            TgtAMap_index                 = (uint8)k_MARKET_SELECT_SPEC[idx_TGT_A_type]         [CarPara_Market_index];
             set_TgtATrackingSp(TgtAMap_index);
             set_TgtAConstSp(TgtAMap_index);
             set_TgtASetSpAcc(TgtAMap_index);
             set_TgtASetSpAccConst(TgtAMap_index);
             set_TgtASetSpMsa(TgtAMap_index);
-
+            
             // AccSp
-            CarPara_ACCSetSpInitMaxKph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_max]           [car_para_MARKET_index];
-            CarPara_ACCSetSpInitMinKph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_min]           [car_para_MARKET_index];
-            CarPara_ACCSetSpInitMaxMph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_max_mile]      [car_para_MARKET_index];
-            CarPara_ACCSetSpInitMinMph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_min_mile]      [car_para_MARKET_index];
-            CarPara_ACCCtrlSpInitMax      = k_MARKET_SELECT_SPEC[idx_acc_cont_spd_max]          [car_para_MARKET_index];
-            CarPara_ACCCtrlSpInitMin      = k_MARKET_SELECT_SPEC[idx_acc_cont_spd_min]          [car_para_MARKET_index];
+            CarPara_ACCSetSpInitMaxKph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_max]           [CarPara_Market_index];
+            CarPara_ACCSetSpInitMinKph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_min]           [CarPara_Market_index];
+            CarPara_ACCSetSpInitMaxMph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_max_mile]      [CarPara_Market_index];
+            CarPara_ACCSetSpInitMinMph    = k_MARKET_SELECT_SPEC[idx_acc_set_spd_min_mile]      [CarPara_Market_index];
+            CarPara_ACCCtrlSpInitMax      = k_MARKET_SELECT_SPEC[idx_acc_cont_spd_max]          [CarPara_Market_index];
+            CarPara_ACCCtrlSpInitMin      = k_MARKET_SELECT_SPEC[idx_acc_cont_spd_min]          [CarPara_Market_index];
 
             // CcSp
-            CarPara_CCSetSpInitMaxKph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_max]            [car_para_MARKET_index];
-            CarPara_CCSetSpInitMinKph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_min]            [car_para_MARKET_index];
-            CarPara_CCSetSpInitMaxMph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_max_mile]       [car_para_MARKET_index];
-            CarPara_CCSetSpInitMinMph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_min_mile]       [car_para_MARKET_index];
-            CarPara_CCCtrlSpInitMax       = k_MARKET_SELECT_SPEC[idx_cc_cont_spd_max]           [car_para_MARKET_index];
-            CarPara_CCCtrlSpInitMin       = k_MARKET_SELECT_SPEC[idx_cc_cont_spd_min]           [car_para_MARKET_index];
+            CarPara_CCSetSpInitMaxKph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_max]            [CarPara_Market_index];
+            CarPara_CCSetSpInitMinKph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_min]            [CarPara_Market_index];
+            CarPara_CCSetSpInitMaxMph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_max_mile]       [CarPara_Market_index];
+            CarPara_CCSetSpInitMinMph     = k_MARKET_SELECT_SPEC[idx_cc_set_spd_min_mile]       [CarPara_Market_index];
+            CarPara_CCCtrlSpInitMax       = k_MARKET_SELECT_SPEC[idx_cc_cont_spd_max]           [CarPara_Market_index];
+            CarPara_CCCtrlSpInitMin       = k_MARKET_SELECT_SPEC[idx_cc_cont_spd_min]           [CarPara_Market_index];
 
             // Dist_warn
-            CarPara_DistWarnSpMax         = k_MARKET_SELECT_SPEC[idx_dis_kh_spd_max]            [car_para_MARKET_index];
+            CarPara_DistWarnSpMax         = k_MARKET_SELECT_SPEC[idx_dis_kh_spd_max]            [CarPara_Market_index];
 
             // PCSpd
-            CarPara_PCSpMax               = k_MARKET_SELECT_SPEC[idx_pc_spd_max]                [car_para_MARKET_index];
+            CarPara_PCSpMax               = k_MARKET_SELECT_SPEC[idx_pc_spd_max]                [CarPara_Market_index];
 
             // PCBa
-            CarPara_PCBAMaxVownOff2On     = k_MARKET_SELECT_SPEC[idx_pcba_max_on_by_vown]       [car_para_MARKET_index];
-            CarPara_PCBAMaxVownOn2Off     = k_MARKET_SELECT_SPEC[idx_pcba_max_off_by_vown]      [car_para_MARKET_index];
-            CarPara_PCBAMaxVrefOff2On     = k_MARKET_SELECT_SPEC[idx_pcba_max_on_by_vrel_pc]    [car_para_MARKET_index];
-            CarPara_PCBAMaxVrefOn2Off     = k_MARKET_SELECT_SPEC[idx_pcba_max_off_by_vrel_pc]   [car_para_MARKET_index];
+            CarPara_PCBAMaxVownOff2On     = k_MARKET_SELECT_SPEC[idx_pcba_max_on_by_vown]       [CarPara_Market_index];
+            CarPara_PCBAMaxVownOn2Off     = k_MARKET_SELECT_SPEC[idx_pcba_max_off_by_vown]      [CarPara_Market_index];
+            CarPara_PCBAMaxVrefOff2On     = k_MARKET_SELECT_SPEC[idx_pcba_max_on_by_vrel_pc]    [CarPara_Market_index];
+            CarPara_PCBAMaxVrefOn2Off     = k_MARKET_SELECT_SPEC[idx_pcba_max_off_by_vrel_pc]   [CarPara_Market_index];
 
             // FMWSp
-            CarPara_FMWSpMax              = k_MARKET_SELECT_SPEC[idx_fmw_spd_max]               [car_para_MARKET_index];               
+            CarPara_FMWSpMax              = k_MARKET_SELECT_SPEC[idx_fmw_spd_max]               [CarPara_Market_index];               
 
             // PCMarket
-            PCMarket_index                = k_MARKET_SELECT_SPEC[idx_PC_A_type]                 [car_para_MARKET_index];
+            PCMarket_index                = (uint8)k_MARKET_SELECT_SPEC[idx_PC_A_type]          [CarPara_Market_index];
             set_PCMarket(PCMarket_index);
 
             // LdpSp
-            CarPara_LDP_VOffMax           = k_MARKET_SELECT_SPEC[idx_ldp_v_max_off]             [car_para_MARKET_index];
-            CarPara_LDP_VOffMin           = k_MARKET_SELECT_SPEC[idx_ldp_v_min_off]             [car_para_MARKET_index];
-            CarPara_LDP_VOnMax            = k_MARKET_SELECT_SPEC[idx_ldp_v_max_on]              [car_para_MARKET_index];
-            CarPara_LDP_VOnMin            = k_MARKET_SELECT_SPEC[idx_ldp_v_min_on]              [car_para_MARKET_index];
+            CarPara_LDP_VOffMax           = k_MARKET_SELECT_SPEC[idx_ldp_v_max_off]             [CarPara_Market_index];
+            CarPara_LDP_VOffMin           = k_MARKET_SELECT_SPEC[idx_ldp_v_min_off]             [CarPara_Market_index];
+            CarPara_LDP_VOnMax            = k_MARKET_SELECT_SPEC[idx_ldp_v_max_on]              [CarPara_Market_index];
+            CarPara_LDP_VOnMin            = k_MARKET_SELECT_SPEC[idx_ldp_v_min_on]              [CarPara_Market_index];
         
             // AlkLim
-            f_CarPara_ALK_LimitWarn       = k_MARKET_SELECT_SPEC[idx_ALK_limit_kh]              [car_para_MARKET_index];
+            f_CarPara_ALK_LimitWarn       = (boolean)k_MARKET_SELECT_SPEC[idx_ALK_limit_kh]     [CarPara_Market_index];
 
             // OneSideLane
-            CarPara_OnesideLaneMode       = (boolean)k_MARKET_SELECT_SPEC[idx_oneside_lane_mode][car_para_MARKET_index];
+            CarPara_OnesideLaneMode       = (boolean)k_MARKET_SELECT_SPEC[idx_oneside_lane_mode][CarPara_Market_index];
 
             // FMWMaxGType
-            FMWMaxGType_index             = k_MARKET_SELECT_SPEC[idx_PC_A_type]                 [car_para_MARKET_index];
+            FMWMaxGType_index             = (uint8)k_MARKET_SELECT_SPEC[idx_PC_A_type]          [CarPara_Market_index];
             set_FMWMaxGCont(FMWMaxGType_index);
             set_FMWMaxGVown(FMWMaxGType_index);
             set_FMWMaxGR(FMWMaxGType_index);
 
             // MarketInfo
-            CarPara_MarketInfo            = (uint8)k_MARKET_SELECT_SPEC[idx_MARKETInfo][car_para_MARKET_index];
+            CarPara_MarketInfo            = (uint8)k_MARKET_SELECT_SPEC[idx_MARKETInfo][CarPara_Market_index];
 
             // OtherInfo
-            CarPara_SpecSignalType        = (uint8)k_MARKET_SELECT_SPEC[idx_spec_signal_type]   [car_para_MARKET_index];
-            CarPara_SpecFMWRType          = (uint8)k_MARKET_SELECT_SPEC[idx_spec_fmw_r_type]    [car_para_MARKET_index];
-            CarPara_SpecFMWRSpdLimDefault = k_MARKET_SELECT_SPEC[idx_spec_fmw_r_spd_lim_default][car_para_MARKET_index];
+            CarPara_SpecSignalType        = (uint8)k_MARKET_SELECT_SPEC[idx_spec_signal_type]   [CarPara_Market_index];
+            CarPara_SpecFMWRType          = (uint8)k_MARKET_SELECT_SPEC[idx_spec_fmw_r_type]    [CarPara_Market_index];
+            CarPara_SpecFMWRSpdLimDefault = k_MARKET_SELECT_SPEC[idx_spec_fmw_r_spd_lim_default][CarPara_Market_index];
 
             // EquipCustom
-            f_CarPara_SpecCustTypeRoad    = (boolean)k_MARKET_SELECT_SPEC[idx_RoadTypeCustEquip][car_para_MARKET_index];
-            CarPara_RoadTypeDefault       = (uint8)k_MARKET_SELECT_SPEC[idx_RoadTypeDefault]    [car_para_MARKET_index];
+            f_CarPara_SpecCustTypeRoad    = (boolean)k_MARKET_SELECT_SPEC[idx_RoadTypeCustEquip][CarPara_Market_index];
+            CarPara_RoadTypeDefault       = (uint8)k_MARKET_SELECT_SPEC[idx_RoadTypeDefault]    [CarPara_Market_index];
 
             // ALKCTJAVown
-            CarPara_ALKCTJAVownOffMax     = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMaxOff]         [car_para_MARKET_index];
-            CarPara_ALKCTJAVownOffMin     = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMinOff]         [car_para_MARKET_index];
-            CarPara_ALKCTJAVownOnMax      = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMaxOn]          [car_para_MARKET_index];
-            CarPara_ALKCTJAVownOnMin      = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMinOn]          [car_para_MARKET_index];
+            CarPara_ALKCTJAVownOffMax     = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMaxOff]         [CarPara_Market_index];
+            CarPara_ALKCTJAVownOffMin     = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMinOff]         [CarPara_Market_index];
+            CarPara_ALKCTJAVownOnMax      = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMaxOn]          [CarPara_Market_index];
+            CarPara_ALKCTJAVownOnMin      = k_MARKET_SELECT_SPEC[idx_ALKCTJAVownMinOn]          [CarPara_Market_index];
 
             // RoadEdge
-            CarPara_RoadEdgeSpMaxOff      = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_max_off] [car_para_MARKET_index];
-            CarPara_RoadEdgeSpMinOff      = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_min_off] [car_para_MARKET_index];
-            CarPara_RoadEdgeSpMaxOn       = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_max_on]  [car_para_MARKET_index];
-            CarPara_RoadEdgeSpMinOn       = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_min_on]  [car_para_MARKET_index];
+            CarPara_RoadEdgeSpMaxOff      = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_max_off] [CarPara_Market_index];
+            CarPara_RoadEdgeSpMinOff      = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_min_off] [CarPara_Market_index];
+            CarPara_RoadEdgeSpMaxOn       = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_max_on]  [CarPara_Market_index];
+            CarPara_RoadEdgeSpMinOn       = k_MARKET_SELECT_SPEC[(uint8)idx_roadedge_v_min_on]  [CarPara_Market_index];
 
             // NotHoldingALK
-            CarPara_NotHoldingSpMaxOff    = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_max_off]       [car_para_MARKET_index];
-            CarPara_NotHoldingSpMinOff    = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_min_off]       [car_para_MARKET_index];
-            CarPara_NotHoldingSpMaxOn     = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_max_on]        [car_para_MARKET_index];
-            CarPara_NotHoldingSpMinOn     = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_min_on]        [car_para_MARKET_index];
+            CarPara_NotHoldingSpMaxOff    = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_max_off]       [CarPara_Market_index];
+            CarPara_NotHoldingSpMinOff    = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_min_off]       [CarPara_Market_index];
+            CarPara_NotHoldingSpMaxOn     = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_max_on]        [CarPara_Market_index];
+            CarPara_NotHoldingSpMinOn     = k_MARKET_SELECT_SPEC[(uint8)idx_b2_v_min_on]        [CarPara_Market_index];
 
             // ALC
-            CarPara_ALCSpMaxOff           = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_max_off]      [car_para_MARKET_index];
-            CarPara_ALCSpMinOff           = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_min_off]      [car_para_MARKET_index];
-            CarPara_ALCSpMaxOn            = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_max_on]       [car_para_MARKET_index];
-            CarPara_ALCSpMinOn            = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_min_on]       [car_para_MARKET_index];
-
+            CarPara_ALCSpMaxOff           = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_max_off]      [CarPara_Market_index];
+            CarPara_ALCSpMinOff           = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_min_off]      [CarPara_Market_index];
+            CarPara_ALCSpMaxOn            = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_max_on]       [CarPara_Market_index];
+            CarPara_ALCSpMinOn            = k_MARKET_SELECT_SPEC[(uint8)idx_alc_v_min_on]       [CarPara_Market_index];
+            
             // FMWR_CANJudge
             if (CarPara_SpecFMWRType == iSPEC_FMW_R_NONE)
             {
@@ -744,11 +744,11 @@ void CarPara_INP_02()
             {
                 if (CarPara_PU == k_PT_CAR_CODE_INDEX[i]) 
                 {
-                    car_para_PU_ENG_index = i;
+                    CarPara_PU_index = i;
                     break;
                 }
             }
-            CarPara_EgTrq_Max = k_PT_SELECT_SPEC[car_para_PU_ENG_index];
+            CarPara_EgTrq_Max = k_PT_SELECT_SPEC[CarPara_PU_index];
 
             // CarPara_SpecISS
             row = sizeof(k_ISS_CAR_CODE_INDEX) / sizeof(k_ISS_CAR_CODE_INDEX[0]);
@@ -756,11 +756,11 @@ void CarPara_INP_02()
             {
                 if (CarPara_ISS == k_ISS_CAR_CODE_INDEX[i])
                 {
-                    car_para_ISS_index = i;
+                    CarPara_ISS_index = i;
                     break;
                 }
             }
-            f_CarPara_SpecISSEquip = (boolean)k_ISS_SELECT_SPEC[car_para_ISS_index];
+            f_CarPara_SpecISSEquip = (boolean)k_ISS_SELECT_SPEC[CarPara_ISS_index];
 
             if((f_CarPara_SpecISSEquip == ON) && (f_CarPara_EquipEPB == ON))
             {
@@ -777,7 +777,6 @@ void CarPara_INP_02()
             // THIS PART IS AUTOMATICALLY CREATED USING Map_ID.py
             // DO NOT MODIFY
             // CarVariant
-            
             set_CarPara_Map(CarPara_VariantPTType,    // iEG_CAR_PARA
                             CarPara_VariantTMType,    // iTM_CAR_PARA
                             CarPara_VariantForLKS,    // iLKS_CAR_PARA
@@ -906,7 +905,6 @@ void CarPara_INP_02()
             ChgReqBrkPrsTbl[1] = CarPara_ReqBrakePressBase_C + (BaseFact / 100.F);
 
             row_ChgReqBrkPrsTbl = sizeof(ChgReqBrkPrsTbl) / sizeof(ChgReqBrkPrsTbl[0]);
-
             while (iterator < row_ChgReqBrkPrsTbl)
             {
                 ChgReqBrkprsNoClpr        = ChgReqBrkprsNoClpr + BaseFact;
@@ -1003,8 +1001,8 @@ void CarPara_INP_02()
                 CarPara_StpHldIssBase = UncertaintyAxisMerge;
             }
         }
-        unit_delay = f_CarPara_Decided;
-    }    
+        unit_delay = f_CarPara_Decided_gbl;
+    }
 }
 
 static void set_LookupTable_1D_Pre(uint16  *ReqBrkG_irx,
@@ -55128,7 +55126,7 @@ static boolean get_ALKSpecJudge(void)
     uint8 result[4] = {0};
     uint8 row = 0;
     row = sizeof(result) / sizeof(result[0]);
-    if(CarPara_LDPType == ON)
+    if (CarPara_LDPType == ON)
     {
         result[0] = iALK_SPEC_ALKB;
     }
@@ -55162,16 +55160,16 @@ static boolean get_ALKSpecJudge(void)
         ALKSpec = ALKSpec | result[i];
     }
 
-    for(uint8 i = 0; i < row; i++)
+
+    if (ALKSpec == iALK_SPEC_NONE)
     {
-        if( result[i] != 0)
-        {
-            return OFF;
-        }
-
+        return ON;
     }
-
-    return ON;
+    else
+    {
+        return OFF;
+    }
+    
 }
 static boolean is_equal(boolean *buf, uint8 size)
 {

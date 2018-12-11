@@ -1,6 +1,92 @@
 from Util import *
 
 
+def create_type_code_for_hypen(df, sheet_name, dic):
+    global type_code_for_hypen_declaration, type_code_for_hypen_definition
+
+    type_code_for_hypen_declaration = []
+    type_code_for_hypen_definition  = []
+
+    maru_count = 0    
+
+    for i in range(maru_count_start, df.shape[0]):
+        map_maru_val = df.iat[i, map_maru_col]
+        if map_maru_val == endofrow:
+            continue
+        if map_maru_val == maru:
+            maru_count = maru_count + 1
+            type_code_for_hypen_definition.append(
+                str(df.iat[i,  + 2]) + ', '
+            )
+
+
+    type_code_for_hypen_declaration.append(
+        extern + space + const + space + datatype_declaration[0] +
+        space  + 'k_'  + sheet_name    + '_CAR_CODE_INDEX'       +
+        '['    + str(maru_count)       + '];\n'
+    )
+
+    add_str_hypen = const + space + datatype_declaration[0]        + \
+                    space + 'k_'   + sheet_name + '_CAR_CODE_INDEX' + \
+                    '['   + str(maru_count)    + '] = \n{\n'       + tab
+
+    type_code_for_hypen_definition.insert(0, add_str_hypen)
+
+    type_code_for_hypen_definition.append(
+        '\n};\n'
+    )
+
+def create_default_REQ_BRKPRS(ReqBrkPrsBaseF,
+                              ReqBrkPrsBaseR,
+                              brkTblCaliperFactSoft):
+    global Req_Brk_declaration, Req_Brk_definition
+
+    Req_Brk_declaration, Req_Brk_definition = [], []
+    five_only = 0
+
+    l_ChgReqBrkPrs, l_ChgReqBrkPrsNoClpr = 0, 0
+    baseFact = 2 * ReqBrkPrsBaseF * ReqBrkPrsBaseR / (ReqBrkPrsBaseF + ReqBrkPrsBaseR)
+
+    l_SetBrkPrs2ndArray = baseFact / 100
+
+    Req_Brk_declaration.append(
+        extern + ' ' +
+        const  + ' ' +
+        datatype_declaration[1] + ' ' +
+        'default_REQ_BRKPRS[32];\n'
+    )
+
+    Req_Brk_definition.append(
+        const + ' ' +
+        datatype_declaration[1] +
+        ' default_REQ_BRKPRS[32] = \n{\n' + tab + ' 0.F, '
+    )
+
+    Req_Brk_definition.append(
+        str(l_SetBrkPrs2ndArray + brkTblCaliperFactSoft) + 'F, '
+    )
+
+    for i in range(3,32 + 1):
+        l_ChgReqBrkPrsNoClpr = l_ChgReqBrkPrsNoClpr + baseFact
+        l_ChgReqBrkPrs       = l_ChgReqBrkPrsNoClpr + brkTblCaliperFactSoft
+        
+        if five_only == 5:
+            five_only = 0
+            Req_Brk_definition.append(
+                '\n' + tab
+            )
+        
+        if five_only < 5:
+            Req_Brk_definition.append(
+                str(l_ChgReqBrkPrs) + 'F, '
+            )
+        
+        five_only = five_only + 1
+
+    Req_Brk_definition.append(
+        '\n};\n'
+    )
+
 def default_str_declaration_func(appendto, structure_name, type):
     # default_xxx declaration
     appendto.append(
@@ -73,13 +159,16 @@ def create_contents(df, dic):
     key_count = len(dic.keys())
 
     structure_name_holder = ""
+    default_REQ_BRKPRS_F = 0
+    default_REQ_BRKPRS_R = 0
+    default_REQ_BRKPRS_C = 0
 
     for i in range(4, key_count):
         # sheet_name is equal to Sheet name
         sheet_name = dic[i]
         save_variable, market_intfloat_flag = '', 0
         contents_flag, structure_flag, svn_flag = 0, 0, 0
-        counter, ten_only = 0, 0
+        counter, ten_only, is_hypen = 0, 0, OFF
 
         contents_declaration   , contents_definition    = [], []
         structure_declaration  , structure_definition   = [], []
@@ -102,6 +191,11 @@ def create_contents(df, dic):
                 contents_flag  = 0
                 structure_flag = 1
                 structure_name_holder = df[sheet_name].iat[cont_struct_row + 1, j]
+            if (df[sheet_name].iat[cont_struct_row, j] == structure) and \
+                    (str(df[sheet_name].iat[cont_struct_row + 1, j]) == '-'):
+                """ FOR k_***_CAR_CODE_INDEX """
+                is_hypen = ON
+                create_type_code_for_hypen(df[sheet_name], sheet_name, dic)
             # if it has contents 
             if (df[sheet_name].iat[cont_struct_row, j] == contents) and (sheet_name in has_contents):
                 contents_flag = 1
@@ -284,6 +378,16 @@ def create_contents(df, dic):
                                                 default_str_declaration, structure_name, 1)
                                             default_maru_definition(
                                                 default_str_definition, structure_name, str(map_value), 1)
+                                            if structure_name == 'idx_ReqBrkPrsBaseF':
+                                                default_REQ_BRKPRS_F = map_value
+                                            if structure_name == 'idx_ReqBrkPrsBaseR':
+                                                default_REQ_BRKPRS_R = default_REQ_BRKPRS_F #to change please confirm
+                                            if structure_name == 'idx_ReqBrkPrsBaseCaliper':
+                                                default_REQ_BRKPRS_C = map_value
+                                                create_default_REQ_BRKPRS(
+                                                    default_REQ_BRKPRS_F,
+                                                    default_REQ_BRKPRS_R,
+                                                    default_REQ_BRKPRS_C)
                                 # MARKET processing
                                 elif sheet_name == market:
                                     if structure_name in mile_htom_s:
@@ -464,6 +568,7 @@ def create_contents(df, dic):
         write_list(h, map_id_declaration)
 
 
+
         # c file
         write_1line(c, "/* --- " + sheet_name + " --- */\n")
         write_list(c, contents_definition)
@@ -471,12 +576,22 @@ def create_contents(df, dic):
         write_list(c, default_str_definition)
         write_list(c, map_definition)
         write_list(c, map_id_definition)
+        
 
         if svn_flag:
             if sheet_name == car_type:
                 create_car_type_code(df[sheet_name], dic, maru_count)
             else:
                 create_type_code(df, sheet_name, dic, maru_count, dec_count, dec_list, structure_name_holder)
+
+        if sheet_name == car_type:
+            write_list(h, Req_Brk_declaration)
+            write_list(c, Req_Brk_definition)
+
+
+        if is_hypen:
+            write_list(h, type_code_for_hypen_declaration)
+            write_list(c, type_code_for_hypen_definition)
 
 def create_contentsforSub(df, dic):
     row_count, column_count, last_val = 0, 0, 0
