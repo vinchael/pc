@@ -26,7 +26,7 @@ def create_type_code_for_hypen(df, sheet_name, dic):
         '['    + str(maru_count)       + '];\n'
     )
 
-    add_str_hypen = const + space + datatype_declaration[0]        + \
+    add_str_hypen = const + space + datatype_declaration[0]         + \
                     space + 'k_'   + sheet_name + '_CAR_CODE_INDEX' + \
                     '['   + str(maru_count)    + '] = \n{\n'       + tab
 
@@ -312,6 +312,7 @@ def create_contents(df, dic):
                 if structure_name in exception_string:
                     pass
                 else:
+                    ten_only = 0
                     for m in range(maru_count_start, df[sheet_name].shape[0]):
                         map_maru_val = df[sheet_name].iat[m, map_maru_col]
                         if map_maru_val == maru:

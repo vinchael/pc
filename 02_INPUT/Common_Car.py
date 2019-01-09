@@ -46,7 +46,7 @@ exception_sheet = {'CAR_TYPE', 'MARKET', 'SUB'}
 exception_string = {'-', '', NULL, 'xxx'}
 
 # Sheet declaration
-is_eng_ON = 1
+is_eng_ON = 0
 
 if is_eng_ON:
     contents  = 'Contents'  
@@ -104,13 +104,16 @@ mp_ss_status = {0: ['ON' , iPAD_CAR_PARA_NUM                    ],
 
 # CAR_TYPE sheet
 iPAD__CAR_PARA_ = {
-    'GA9005': '0',
-    'FN410' : '1',
-    'GA5504': '2',
-    'FH400' : '3',
-    'FN360' : '4',
-    'FA300' : '5',
-    'NUM'   : '6'
+    'GA9005' : '0',
+    'FN410'  : '1',
+    'GA5504' : '2',
+    'FH400'  : '3',
+    'FN360'  : '4',
+    'FA300'  : '5',
+    'J636'   : '0',
+    'FA430'  : '0',
+    'GA5504H': '0',
+    'NUM'    : '6'
 }
 
 state_ = {'OFF' : '0',

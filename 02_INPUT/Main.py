@@ -13,7 +13,7 @@ def start_process(df, dic):
         create_header(i, "_C")
         pass
     
-    # addition of inlude
+    # addition of include
     write_1line(Car_Para_FileName_C[0], MDL_Car_Param_h)
     #write_1line(Car_Para_FileName_C[1], MDL_VC_Param_h)
     write_1line(Car_Para_FileName_H[0], Rte_Type)
