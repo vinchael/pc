@@ -1,7 +1,6 @@
 from Common_Car import *
 from Common_VC import *
 from StringManipulation import *
-from CaraParaIndexes import *
 import argparse
 import os
 import pandas as pd
@@ -101,7 +100,7 @@ def default_maru_def_ub(appendto, structure_name, computed_value, type):
         default_ +
         str(structure_name[3:]) + ' = ' +
         str(computed_value) +
-        ';\n'
+        'U;\n'
     )
 
 k_CAR_SELECT_SPEC = {'idx_VariantPadTypeF'      : [iPAD__CAR_PARA_] ,
@@ -112,13 +111,17 @@ k_CAR_SELECT_SPEC = {'idx_VariantPadTypeF'      : [iPAD__CAR_PARA_] ,
                      'idx_spec_manual_mode'     : [state_]          ,
                      'idx_variant_pt'           : [iEG_CAR_PARA_]   ,
                      'idx_variant_tm'           : [iTM_CAR_PARA_]   ,
-                     'idx_variant_for_ldp'      : [iLDP_CAR_PARA]   ,
+                     'idx_variant_for_ldp'      : [iLDP_CAR_PARA_]   ,
                      'idx_SpecALKSwMemory'      : [iSPEC_ALK_MEM_]  ,
-                     'idx_lks_default'          : [state_],
+                     'idx_SpecLDPSwMemory'      : [iSPEC_ALK_MEM_]  ,
+                     'idx_lks_default'          : [state_]          ,
                      'idx_variant_for_lks'      : [iLKS_CAR_PARA_]  ,
                      'idx_spec_cc_type'         : [iSPEC_]          ,
-                     #'idx_spec_cc_sw_type'      : [iSPEC_]          , TODO
-                     'idx_vdc_offmode'          : [iSPEC_VDCSW_]
+                     #'idx_spec_cc_sw_type'     : [iSPEC_]          , TODO
+                     'idx_vdc_offmode'          : [iSPEC_VDCSW_]    ,
+                     'idx_TJABlue'              : [state_]          ,
+                     'idx_AES'                  : [state_]          ,
+                     'idx_variant_for_aes'      : [iAES_CAR_PARA_]
                     }
 
 k_MARKET_SELECT_SPEC = {'idx_dis_kh_spd_max'             : [spd_max]         ,

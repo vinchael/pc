@@ -16,7 +16,7 @@ def create_type_code_for_hypen(df, sheet_name, dic):
         if map_maru_val == maru:
             maru_count = maru_count + 1
             type_code_for_hypen_definition.append(
-                str(df.iat[i,  + 2]) + ', '
+                str(df.iat[i,  + 2]) + 'U, '
             )
 
 
@@ -117,7 +117,7 @@ def create_car_type_code(df, dic, maru_count):
         const                   + ' ' +
         datatype_declaration[0] + ' ' +
         k_CAR_CAR_CODE_INDEX    + '[' +
-        str(maru_count)         + '][10];\n'
+        str(maru_count)         + '][16];\n'
     )
 
 
@@ -125,7 +125,7 @@ def create_car_type_code(df, dic, maru_count):
         const + ' ' +
         datatype_declaration[0] + ' '       +
         k_CAR_CAR_CODE_INDEX    + '['       +
-        str(maru_count)         + '][10] =' +
+        str(maru_count)         + '][16] =' +
         '\n{\n'                 + tab       + 
         '{\n'                   + double_tab
     )
@@ -135,10 +135,11 @@ def create_car_type_code(df, dic, maru_count):
             for i in range(type_code_col, ten_bytes):
                 type_code_value = df.iat[m, i]
                 type_code_value = type_code_value.replace('$', '')
+                
                 type_code_dec = int(type_code_value, 16)
 
                 type_code_definition.append(
-                    str(type_code_dec) + ', '
+                    str(type_code_dec) + 'U, '
                 )
 
             type_code_definition.append(
@@ -205,6 +206,8 @@ def create_contents(df, dic):
                 if contents_value in exception_string:
                     pass
                 else:
+                    if ((contents_value not in CAR_TYPE_contents_checking) and (sheet_name == car_type)) and (contents_value not in exception_string):
+                        print("Sheet name:", sheet_name, "Contents added:", contents_value)
                     if sheet_name == car_type:
                         contents_declaration.append(
                             extern                  + ' ' +
@@ -245,9 +248,9 @@ def create_contents(df, dic):
                                 const                   + ' '                    +
                                 datatype_declaration[0] + ' '                    +
                                 str(bit_var_name)       + '[3] =\n{\n'           +
-                                tab                     + str(bit_loc)           +
-                                ', '                    + str(dec_shift_val_Arr) +
-                                ', ' + (str(bit_L) if str(bit_R) is '' else str(bit_R)) +
+                                tab                     + str(bit_loc)           + 'U' +
+                                ', '                    + str(dec_shift_val_Arr) + 'U' +
+                                ', ' + (str(bit_L) if str(bit_R) is '' else str(bit_R)) + 'U' +
                                 '\n};\n'
                             )
             
@@ -256,7 +259,7 @@ def create_contents(df, dic):
                 # checking changes in CAR_TYPE structures
                 if ((structure_name not in CAR_TYPE_checking) and (sheet_name == car_type)) and ( structure_name not in exception_string):
                     print( "Sheet name:", sheet_name, "Structure added:", structure_name)
-
+        
                 if (structure_name == market_float32_start) and (sheet_name == market):
                     market_intfloat_flag = 1
                 if (structure_name == market_uint8_start)   and (sheet_name == market):
@@ -290,7 +293,7 @@ def create_contents(df, dic):
                                 const + ' ' +
                                 datatype_declaration[0] + ' ' +
                                 str(structure_name) + ' = ' +
-                                str(counter) + ';\n'
+                                str(counter) + 'U;\n'
                             )
                             # default definition
                     else:
@@ -304,7 +307,7 @@ def create_contents(df, dic):
                             const + ' ' +
                             datatype_declaration[0] + ' ' +
                             str(structure_name) + ' = ' +
-                            str(counter) + ';\n'
+                            str(counter) + 'U;\n'
                         )
                     counter = counter + 1
                     
@@ -494,6 +497,7 @@ def create_contents(df, dic):
         
         # map_id creation
         if sheet_name == map_id:
+            """ print('MAP_ID') """
             for i in mp_ss_status:
                 value = [0, 0, 0, 0]
                 ind, map_id_counter = 0, 0
@@ -505,6 +509,7 @@ def create_contents(df, dic):
                         map_id_values = df[sheet_name].iat[k, map_id_param_col]
                         if map_id_values == NULL:
                             break
+                        """ print( '-->' + map_id_values) """
                         map_id_declaration.append(
                             extern             + ' ' +
                             const              + ' ' +
@@ -566,7 +571,7 @@ def create_contents(df, dic):
         write_list(h, structure_declaration)
         write_list(h, default_str_declaration)
         write_list(h, map_declaration)
-        write_list(h, map_id_declaration)
+        # write_list(h, map_id_declaration)
 
 
 
@@ -576,7 +581,7 @@ def create_contents(df, dic):
         write_list(c, structure_definition)
         write_list(c, default_str_definition)
         write_list(c, map_definition)
-        write_list(c, map_id_definition)
+        # write_list(c, map_id_definition)
         
 
         if svn_flag:

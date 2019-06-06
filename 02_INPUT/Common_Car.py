@@ -64,8 +64,8 @@ cont_struct_row = 0
 maru_count_start = 4
 
 # type code values
-type_code_col = 3
-ten_bytes = 13
+type_code_col = 4
+ten_bytes = 20
 k_CAR_CAR_CODE_INDEX = 'k_CAR_CAR_CODE_INDEX'
 
 # market idx_xxx datatype where to start/end 
@@ -78,164 +78,136 @@ map_id_param_col = 2
 
 
 # MAP_ID declaration definition
-# ieg, itm, ilks, ildp               start,  total index, datatype
-iPAD_CAR_PARA_NUM                   = [22 ,  16, uint8  ]  # 'ON' , iPAD
-mp_ss_egtrq_map                     = [37 ,  31, float32]  # 'OFF', iEG
-mp_ss_a_fmw_direct_r                = [74 ,  68, float32]  # 'ON' , iEG
-mp_ss_rs_inertia_mass_map           = [111, 105, uint8  ]  # 'ON' , iTM
-mp_ss_tja_str_deg_calc_map          = [142, 136, uint8  ]  # 'ON' , iLKS
-mp_ss_str_deg_calc_map              = [166, 160, float32]  # 'OFF', iLDP
-mp_ss_ff_map_p                      = [217, 211, float32]  # 'OFF', iLDP
-mp_ss_LDPDrvovrInStart              = [268, 262, float32]  # 'OFF', iLDP
-mp_ss_p_actual_max_trq_by_egrev_tbl = [319, 313, float32]  # 'OFF', IEG
-mp_ss_TrqRateCtrlStartInELK         = [356, 350, uint8  ]  # 'ON' , iLDP
+""" excel file starts with row 3 index is 0 """
+""" start,  maximum count, datatype """
+iPAD_status  = [22 ,  16, uint8  ]  # 'ON' , iPAD
+iEG_status   = [39 ,  33, float32]  # 'ON' , iEG
+iTM_status   = [117, 111, uint8  ]  # 'ON' , iTM
+iLKS_status  = [151, 145, uint8  ]  # 'ON' , iLKS
+iLDP_status  = [171, 165, uint8  ]  # 'ON' , iLDP
+AES_status   = [249, 243, uint8  ]  # 'ON' , AES
 
-mp_ss_status = {0: ['ON' , iPAD_CAR_PARA_NUM                    ],
-                1: ['OFF', mp_ss_egtrq_map                      ],
-                2: ['ON' , mp_ss_a_fmw_direct_r                 ],
-                3: ['ON' , mp_ss_rs_inertia_mass_map            ],
-                4: ['ON' , mp_ss_tja_str_deg_calc_map           ],
-                5: ['OFF', mp_ss_str_deg_calc_map               ],
-                6: ['OFF', mp_ss_ff_map_p                       ],
-                7: ['OFF', mp_ss_LDPDrvovrInStart               ],
-                8: ['OFF', mp_ss_p_actual_max_trq_by_egrev_tbl  ],
-                9: ['ON' , mp_ss_TrqRateCtrlStartInELK          ]
+
+mp_ss_status = {0: ['ON', iPAD_status],
+                1: ['ON', iEG_status ],
+                2: ['ON', iTM_status ],
+                3: ['ON', iLKS_status],
+                4: ['ON', iLDP_status],
+                5: ['ON', AES_status ],
                 }
 
 # CAR_TYPE sheet
-iPAD__CAR_PARA_ = {
-    'GA9005' : '0',
-    'FN410'  : '1',
-    'GA5504' : '2',
-    'FH400'  : '3',
-    'FN360'  : '4',
-    'FA300'  : '5',
-    'J636'   : '0',
-    'FA430'  : '0',
-    'GA5504H': '0',
-    'NUM'    : '6'
-}
 
 state_ = {'OFF' : '0',
           'ON'  : '1'
          }
 
-iEG_CAR_PARA_ = {'936_US'      : '0' ,
-                 '936_EU'      : '1' ,
-                 '936_DOM'     : '2' ,
-                 '925_US'      : '3' ,
-                 '925_EU'      : '4' ,
-                 '925_DOM'     : '5' ,
-                 '920DIB_US'   : '6' ,
-                 '920DIB_EU'   : '7' ,
-                 '920DIB_DOM'  : '8' ,
-                 '920_US'      : '9' ,
-                 '920_US_XUV'  : '10',
-                 '920_DOM'     : '11',
-                 '920_DOM_XUV' : '12',
-                 '920_EU'      : '13',
-                 '920_EU_SAI'  : '14',
-                 '920_EU_XUV'  : '15',
-                 '916DIB_EU'   : '16',
-                 '916DIB_DOM'  : '17',
-                 '916_DOM'     : '18',
-                 '916_DOM_XUV' : '19',
-                 '916_EU_XUV'  : '20',
-                 '520B_EU'     : '21',
-                 '924DIB_US'   : '22',
-                 '920_CHINA'   : '23',
-                 '920_CHINA_B' : '24',
-                 '924DIB_DOM'  : '25',
-                 '924DIB_EU'   : '26',
-                 '918DST_DOM'  : '27',
-                 'NUM'         : '28'
-                }
+""" version 2-10 """
+iPAD__CAR_PARA_ = {
+    'FA300': '0',
+    'FA430': '1',
+    'FA431': '2',
+    'FH400': '3',
+    'GA5504H': '4',
+    'J636': '5',
+    'FN360': '6',
+    'FN410': '7',
+    'NUM': '8'
+}
+iEG_CAR_PARA_ = {
+    '936_US': '0',
+    '936_EU': '1',
+    '936_DOM': '2',
+    '925_US': '3',
+    '925_EU': '4',
+    '925_DOM': '5',
+    '925_OTHER': '6',
+    '920DIB_US': '7',
+    '920DIB_EU': '8',
+    '920DIB_DOM': '9',
+    '920_US': '10',
+    '920_US_XUV': '11',
+    '920_DOM': '12',
+    '920_DOM_XUV': '13',
+    '920_EU': '14',
+    '920_EU_SAI': '15',
+    '920_EU_XUV': '16',
+    '916DIB_EU': '17',
+    '916DIB_DOM': '18',
+    '916_DOM': '19',
+    '916_DOM_XUV': '20',
+    '916_EU_XUV': '21',
+    '520B_EU': '22',
+    '924DIB_US': '23',
+    '920_CHINA': '24',
+    '920_CHINA_B': '25',
+    '924DIB_DOM': '26',
+    '924DIB_EU': '27',
+    '918DST_DOM': '28',
+    '918DST_DOM_B': '29',
+    'NUM': '30'
+}
+iTM_CAR_PARA_ = {
+    'CVT_C20': '0',
+    'CVT_C20_B': '1',
+    'CVT_C20_C': '2',
+    'CVT_C20_D': '3',
+    'CVT_C20_E': '4',
+    'CVT_C20_F': '5',
+    'CVT_C20_916': '6',
+    'CVT_C20_916_B': '7',
+    'CVT_C20_916_C': '8',
+    'CVT_C23': '9',
+    'CVT_C23_B': '10',
+    'CVT_C26': '11',
+    'CVT_C26_B': '12',
+    'CVT_C26_C': '13',
+    'HTCVT_C31': '14',
+    'HTCVT_C31_B': '15',
+    'HTCVT_C31_C': '16',
+    'HTCVT_C37': '17',
+    'HTCVT_C37_B': '18',
+    'HTCVT_C37_C': '19',
+    'HTCVT_C52': '20',
+    'HTCVT_C52_B': '21',
+    '5AT': '22',
+    'CVT_C20_CHINA': '23',
+    'CVT_C20_CHINA_B': '24',
+    'NUM': '25'
+}
+iLKS_CAR_PARA_ = {
+    'OTHERS': '0',
+    'V_S': '1',
+    'V_W': '2',
+    'V_Swide': '3',
+    'V_S_US': '4',
+    'V_Swide_US': '5',
+    'G_S': '6',
+    'G_W': '7',
+    'G_X': '8',
+    'B_S': '9',
+    'B_O': '10',
+    'NUM': '11'
+}
+iLDP_CAR_PARA_ = {
+    'OTHERS': '0',
+    'STD': '1',
+    'OBK': '2',
+    'OBK_WILD': '3',
+    'NUM': '4'
+}
+iAES_CAR_PARA_ = {
+    'OTHERS': '0',
+    'STD': '1',
+    'STD_iB': '2',
+    'OBK': '3',
+    'OBK_iB': '4',
+    'OBK_WILD': '5',
+    'OBK_WILD_iB': '6',
+    'NUM': '7'
+}
 
-iTM_CAR_PARA_ = {'CVT_C20'        : '0' ,
-                'CVT_C20_B'       : '1' ,
-                'CVT_C20_C'       : '2' ,
-                'CVT_C20_D'       : '3' ,
-                'CVT_C20_E'       : '4' ,
-                'CVT_C20_F'       : '5' ,
-                'CVT_C20_916'     : '6' ,
-                'CVT_C20_916_B'   : '7' ,
-                'CVT_C20_916_C'   : '8' ,
-                'CVT_C26'         : '9' ,
-                'CVT_C26_B'       : '10',
-                'CVT_C26_C'       : '11',
-                'HTCVT_C31'       : '12',
-                'HTCVT_C31_B'     : '13',
-                'HTCVT_C31_C'     : '14',
-                'HTCVT_C37'       : '15',
-                'HTCVT_C37_B'     : '16',
-                'HTCVT_C52'       : '17',
-                'HTCVT_C52_B'     : '18',
-                '5AT'             : '19',
-                'CVT_C20_CHINA'   : '20',
-                'CVT_C20_CHINA_B' : '21',
-                'CVT_NUM'         : '22'
-                }
 
-
-iLDP_CAR_PARA = {'OTHERS'     : '0' ,
-                 'G_S17'      : '1' ,
-                 'G_W17'      : '2' ,
-                 'G_X17'      : '3' ,
-                 'B_S17'      : '4' ,
-                 'B_S18'      : '5' ,
-                 'B_O17'      : '6' ,
-                 'B_O18'      : '7' ,
-                 'V_S18W'     : '8' ,
-                 'V_W17'      : '9' ,
-                 'V_W18'      : '10',
-                 'B_S17_US'   : '11',
-                 'B_S18_US'   : '12',
-                 'B_O17_US'   : '13',
-                 'B_O18_US'   : '14',
-                 'V_S18_US'   : '15',
-                 'S_O17'      : '16',
-                 'S_O18'      : '17',
-                 'S_O17_US'   : '18',
-                 'S_O18_US'   : '19',
-                 'V_S18_EU'   : '20',
-                 'V_W17_EU'   : '21',
-                 'V_W18_EU'   : '22',
-                 'GH_S16'     : '23',
-                 'GH_S17'     : '24',
-                 'GH_S18'     : '25',
-                 'GH_W16'     : '26',
-                 'GH_W17'     : '27',
-                 'GH_W18'     : '28',
-                 'GH_X17'     : '29',
-                 'GH_X178'    : '30',
-                 'GH_S167_US' : '31',
-                 'GH_S168_US' : '32',
-                 'GH_W167_US' : '33',
-                 'GH_W168_US' : '34',
-                 'GH_X178_US' : '35',
-                 'GH_X17_EU'  : '36',
-                 'GH_X178_EU' : '37',
-                 'W_O20_US'   : '38',
-                 'SE_O178'    : '39',
-                 'SE_O178_US' : '40',
-                 'SE_O178_EU' : '41',
-                 'NUM'        : '42'
-                 }
-
-
-iLKS_CAR_PARA_ = {'OTHERS'     : '0' ,
-                  'V_S'        : '1' ,
-                  'V_W'        : '2' ,
-                  'V_Swide'    : '3' ,
-                  'V_S_US'     : '4' ,
-                  'V_Swide_US' : '5' ,
-                  'G_S'        : '6' ,
-                  'G_W'        : '7' ,
-                  'G_X'        : '8' ,
-                  'B_S'        : '9' ,
-                  'B_O'        : '10',
-                  'NUM'        : '11'
-                 }
 
 # default is float for MAPPING Definition
 datatype_boolean = {'AUTO_BRK', 'ISS', 'HEV'}
@@ -307,6 +279,7 @@ CAR_TYPE_checking = {'idx_VariantPadTypeF',
                      'idx_spec_cc_sw_type',
                      'idx_nagaoshi_thr',
                      'idx_vdc_offmode',
+                    #  'idx_AES',
                      'idx_ReqBrkPrsBaseF',
                      'idx_ReqBrkPrsBaseR',
                      'idx_ReqBrkPrsBaseCaliper',
@@ -314,4 +287,46 @@ CAR_TYPE_checking = {'idx_VariantPadTypeF',
                      'idx_VelCoefficientR',
                      'idx_aown_CorrectRate',
                      'idx_vso_error'
-                     }
+                    }
+
+CAR_TYPE_contents_checking = {'ba_CarSystem',
+                              'ba_YearMode',
+                              'ba_Market',
+                              'ba_MarketDetail',
+                              'ba_Grade',
+                              'ba_AtmPressSensor',
+                              'ba_PU',
+                              'ba_Body',
+                              'ba_OEM',
+                              'ba_AWD',
+                              'ba_RAB',
+                              'ba_Brake',
+                              'ba_Tire',
+                              'ba_TCM',
+                              'ba_EBrkBooster',
+                              'ba_ISS',
+                              'ba_HEV',
+                              'ba_EPB',
+                              'ba_AVH',
+                              'ba_MSA',
+                              'ba_TSR',
+                              'ba_RadarF',
+                              'ba_RadarR',
+                              'ba_ELK',
+                              'ba_StrVibration',
+                              'ba_RoadEdge',
+                              'ba_MapLocator',
+                              'ba_SonarF',
+                              'ba_DMS',
+                              'ba_ALC',
+                              'ba_NotHoldingALK',
+                              'ba_AutoDepart',
+                              'ba_iACC',
+                              'ba_SlowBfCrv',
+                              'ba_ALKB',
+                              'ba_ALKC',
+                              'ba_StrTouchSensor',
+                              'ba_MonoCam',
+                              'ba_LightCtrl',
+                              'ba_HandlePos',
+                            }

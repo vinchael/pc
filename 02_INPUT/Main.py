@@ -33,6 +33,11 @@ def start_process(df, dic):
 
 def main(argv):
 
+    if is_eng_ON:
+        print('is_eng_ON is set to ON.')
+    else:
+        print('is_eng_ON is set to OFF.')
+
     filename = readArgParse()
     if filename:
         df, dic = {}, {}
